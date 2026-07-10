@@ -1,0 +1,9 @@
+/ (raiz do projeto)
+├── app.py
+├── requirements.txt
+├── Procfile
+├── .python-version
+├── nixpacks.toml
+└── templates/             <-- O Flask procura obrigatoriamente por esta pasta
+    ├── base.html
+    └── index.html
