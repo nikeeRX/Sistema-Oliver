@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'chave_secreta_local_para_testes')
 
 # ==========================================
-# 1. FRONTEND RAIZ EMBUTIDO (HTML + CSS)
+# 1. FRONTEND RAIZ EMBUTIDO (HTML + CSS) - DESIGN PREMIUM
 # ==========================================
 
 TEMPLATES = {
@@ -22,62 +22,67 @@ TEMPLATES = {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OLIVA - Fragrância em Decants</title>
         <style>
-            /* Reset e Tipografia */
+            /* Reset e Tipografia Premium */
             body, h1, h2, h3, p, ul, form { margin: 0; padding: 0; box-sizing: border-box; }
-            body { background-color: #fdfbf7; color: #2c2621; font-family: 'Helvetica Neue', Arial, sans-serif; }
+            body { background-color: #fcfaf7; color: #332d27; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 300; }
             
-            /* Navbar */
-            .navbar { background-color: #ffffff; border-bottom: 1px solid #dfd5c6; padding: 15px 0; }
+            /* Navbar Luxo */
+            .navbar { background-color: transparent; padding: 30px 0; border-bottom: 1px solid #eae1d3; }
             .nav-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
-            .logo-text { font-family: 'Georgia', serif; font-size: 20pt; font-weight: bold; color: #2c2621; text-decoration: none; letter-spacing: 3px; }
-            .navbar nav a { color: #2c2621; text-decoration: none; margin-left: 20px; font-size: 11pt; font-weight: 500; transition: color 0.3s; }
+            .logo-text { font-family: 'Times New Roman', Georgia, serif; font-size: 26pt; font-weight: normal; color: #b89758; text-decoration: none; letter-spacing: 8px; text-transform: uppercase; }
+            .navbar nav a { color: #665b4f; text-decoration: none; margin-left: 25px; font-size: 10pt; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
             .navbar nav a:hover { color: #b89758; }
             
             /* Layout Container */
-            .content-container { max-width: 1100px; margin: 40px auto; padding: 0 20px; min-height: 60vh; }
+            .content-container { max-width: 1100px; margin: 50px auto; padding: 0 20px; min-height: 60vh; }
             
             /* Hero Section e Títulos */
-            .hero-section { text-align: center; margin-bottom: 50px; padding: 30px 0; }
-            .hero-section h2 { font-family: 'Georgia', serif; font-size: 24pt; margin-bottom: 10px; }
-            .hero-section p { color: #8c764d; font-style: italic; }
-            .page-title { font-family: 'Georgia', serif; font-size: 20pt; border-left: 4px solid #b89758; padding-left: 15px; margin-bottom: 25px; }
+            .hero-section { text-align: center; margin-bottom: 60px; padding: 20px 0; }
+            .hero-section h2 { font-family: 'Times New Roman', Georgia, serif; font-size: 24pt; font-weight: normal; margin-bottom: 15px; color: #2c2621; letter-spacing: 2px; }
+            .hero-section p { color: #8c764d; font-style: italic; font-size: 11pt; letter-spacing: 1px; }
+            .page-title { font-family: 'Times New Roman', Georgia, serif; font-weight: normal; font-size: 22pt; margin-bottom: 30px; color: #2c2621; letter-spacing: 1px; text-align: center; }
             
-            /* Grid de Produtos */
+            /* Grid de Produtos - Estilo Boutique */
             .products-grid { display: flex; flex-wrap: wrap; gap: 2%; }
-            .product-card { background: #ffffff; border: 1px solid #e1d9ce; width: 31%; margin-bottom: 30px; border-radius: 4px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; }
-            .product-card:hover { box-shadow: 0 10px 20px rgba(44,38,33,0.05); }
-            .product-img-placeholder { background-color: #2c2621; height: 200px; display: flex; align-items: center; justify-content: center; }
-            .product-img-placeholder span { color: #b89758; font-family: 'Georgia', serif; font-size: 14pt; letter-spacing: 2px; }
-            .product-info { padding: 20px; }
-            .product-info h3 { font-size: 13pt; margin-bottom: 5px; }
-            .volumetria { font-size: 9pt; color: #8c764d; font-weight: bold; margin-bottom: 10px; }
-            .description { font-size: 10pt; color: #666; margin-bottom: 15px; height: 45px; overflow: hidden; }
-            .price { font-size: 14pt; font-weight: bold; color: #2c2621; margin-bottom: 15px; }
+            .product-card { background: #ffffff; border: 1px solid #f2ecdf; width: 31%; margin-bottom: 40px; border-radius: 6px; overflow: hidden; transition: all 0.4s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+            .product-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(184, 151, 88, 0.1); border-color: #dfd5c6; }
+            
+            /* O Novo Placeholder do Perfume */
+            .product-img-placeholder { background: linear-gradient(135deg, #fffcf7 0%, #f4ede1 100%); height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid #f2ecdf; }
+            .img-icon { font-size: 28pt; color: #b89758; margin-bottom: 10px; opacity: 0.8; }
+            .product-img-placeholder span.marca { color: #8c764d; font-family: 'Times New Roman', Georgia, serif; font-size: 11pt; letter-spacing: 4px; text-transform: uppercase; opacity: 0.7; }
+            
+            .product-info { padding: 25px 20px; text-align: center; }
+            .product-info h3 { font-size: 14pt; margin-bottom: 8px; color: #2c2621; font-weight: 500; letter-spacing: 1px; }
+            .volumetria { font-size: 9pt; color: #b89758; font-weight: bold; margin-bottom: 12px; letter-spacing: 1px; }
+            .description { font-size: 9.5pt; color: #7a7065; margin-bottom: 20px; height: 42px; overflow: hidden; line-height: 1.5; }
+            .price { font-size: 15pt; color: #2c2621; margin-bottom: 20px; font-family: 'Times New Roman', Georgia, serif; }
             
             /* Dashboard Cards */
             .dashboard-cards { display: flex; gap: 20px; margin-bottom: 40px; }
-            .card { background: #ffffff; padding: 25px; border: 1px solid #e1d9ce; border-left: 4px solid #b89758; flex: 1; border-radius: 4px; }
-            .card h3 { color: #8c764d; font-size: 11pt; margin-bottom: 10px; text-transform: uppercase; }
-            .card p { font-size: 24pt; font-weight: bold; color: #2c2621; }
+            .card { background: #ffffff; padding: 30px; border: 1px solid #eae1d3; border-top: 3px solid #b89758; flex: 1; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+            .card h3 { color: #8c764d; font-size: 9pt; margin-bottom: 15px; letter-spacing: 2px; }
+            .card p { font-size: 28pt; color: #2c2621; font-family: 'Times New Roman', Georgia, serif; }
             
             /* Formulários */
-            .form-group { margin-bottom: 15px; }
-            label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 10pt; color: #666; }
-            input, textarea { width: 100%; padding: 10px; border: 1px solid #dfd5c6; border-radius: 4px; font-family: inherit; }
+            .form-group { margin-bottom: 20px; text-align: left; }
+            label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 9pt; color: #665b4f; text-transform: uppercase; letter-spacing: 1px; }
+            input, textarea { width: 100%; padding: 12px; border: 1px solid #dfd5c6; border-radius: 4px; font-family: inherit; background-color: #fffcf7; transition: border 0.3s; }
+            input:focus, textarea:focus { outline: none; border-color: #b89758; }
             
-            /* Botoes e Alertas */
-            .btn-primary { background-color: #b89758; color: #ffffff; border: none; width: 100%; padding: 12px; font-size: 10.5pt; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; cursor: pointer; border-radius: 2px; transition: background-color 0.3s; }
-            .btn-primary:hover { background-color: #a48346; }
-            .alert { padding: 15px; margin-bottom: 20px; border-radius: 4px; background-color: #f7f3eb; border: 1px solid #b89758; color: #8c764d; }
+            /* Botoes e Alertas Premium */
+            .btn-primary { background-color: #b89758; color: #ffffff; border: none; width: 100%; padding: 14px; font-size: 9pt; text-transform: uppercase; letter-spacing: 2px; font-weight: 500; cursor: pointer; border-radius: 4px; transition: all 0.3s; }
+            .btn-primary:hover { background-color: #2c2621; color: #b89758; }
+            .alert { padding: 15px; margin-bottom: 25px; border-radius: 4px; background-color: #fdfbf7; border-left: 4px solid #b89758; color: #665b4f; font-size: 10pt; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
             
-            /* Tabelas */
-            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #fff; border: 1px solid #e1d9ce; }
-            th, td { padding: 15px; text-align: left; border-bottom: 1px solid #e1d9ce; }
-            th { background-color: #f7f3eb; color: #8c764d; font-size: 10pt; text-transform: uppercase; }
-            tr:hover { background-color: #fcfbf9; }
+            /* Tabelas Clean */
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+            th, td { padding: 18px 15px; text-align: left; border-bottom: 1px solid #f2ecdf; }
+            th { background-color: #fffcf7; color: #8c764d; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; }
+            tr:hover { background-color: #fdfbf7; }
             
             /* Rodape */
-            .main-footer { text-align: center; padding: 40px 0; border-top: 1px solid #e1d9ce; margin-top: 60px; font-size: 9pt; color: #8c764d; }
+            .main-footer { text-align: center; padding: 50px 0; margin-top: 60px; font-size: 9pt; color: #a39686; border-top: 1px solid #eae1d3; letter-spacing: 1px; }
         </style>
     </head>
     <body>
@@ -95,7 +100,7 @@ TEMPLATES = {
                             <a href="/carrinho">Carrinho</a>
                             <a href="/meus-pedidos">Meus Pedidos</a>
                         {% endif %}
-                        <a href="/logout" style="color: #d9534f;">Sair</a>
+                        <a href="/logout" style="color: #a39686;">Sair</a>
                     {% else %}
                         <a href="/carrinho">Carrinho</a>
                         <a href="/login">Login</a>
@@ -114,7 +119,7 @@ TEMPLATES = {
             {% block content %}{% endblock %}
         </main>
         <footer class="main-footer">
-            <p>&copy; 2026 OLIVA - Fragrância em Decants. Todos os direitos reservados.</p>
+            <p>OLIVA &copy; 2026. A ARTE DA FRAGRÂNCIA EM DECANTS.</p>
         </footer>
     </body>
     </html>
@@ -124,16 +129,19 @@ TEMPLATES = {
     {% extends 'base.html' %}
     {% block content %}
     <div class="hero-section">
-        <h2>Fragrância em Decants</h2>
-        <p>Experimente a sofisticação das maiores grifes do mundo na volumetria perfeita para você.</p>
+        <h2>A Essência da Exclusividade</h2>
+        <p>A sofisticação das maiores grifes do mundo, na volumetria perfeita para você.</p>
     </div>
     <div class="products-grid">
         {% for produto in produtos %}
         <div class="product-card">
-            <div class="product-img-placeholder"><span>OLIVA</span></div>
+            <div class="product-img-placeholder">
+                <div class="img-icon">✧</div>
+                <span class="marca">OLIVA</span>
+            </div>
             <div class="product-info">
                 <h3>{{ produto.nome }}</h3>
-                <p class="volumetria">{{ produto.volume_ml }}ml | Em Estoque: {{ produto.estoque }}</p>
+                <p class="volumetria">{{ produto.volume_ml }}ML &nbsp;|&nbsp; ESTOQUE: {{ produto.estoque }}</p>
                 <p class="description">{{ produto.descricao }}</p>
                 <p class="price">R$ {{ "%.2f"|format(produto.preco) }}</p>
                 <form action="{{ url_for('adicionar_carrinho', id_produto=produto.id) }}" method="POST">
@@ -142,7 +150,7 @@ TEMPLATES = {
             </div>
         </div>
         {% else %}
-        <p style="text-align: center; width: 100%; color: #8c764d;">Nenhum decant disponível no catálogo.</p>
+        <p style="text-align: center; width: 100%; color: #8c764d; font-style: italic;">Nosso catálogo está sendo atualizado com novas essências.</p>
         {% endfor %}
     </div>
     {% endblock %}
@@ -151,28 +159,28 @@ TEMPLATES = {
     'carrinho.html': '''
     {% extends 'base.html' %}
     {% block content %}
-    <h2 class="page-title">Seu Carrinho</h2>
+    <h2 class="page-title">Carrinho de Compras</h2>
     {% if produtos %}
         <table>
-            <tr><th>Produto</th><th>Volumetria</th><th>Qtd</th><th>Subtotal</th></tr>
+            <tr><th>Fragrância</th><th>Volumetria</th><th>Quantidade</th><th>Subtotal</th></tr>
             {% for p in produtos %}
             <tr>
-                <td><strong>{{ p.nome }}</strong></td>
-                <td>{{ p.volume_ml }}ml</td>
+                <td style="color: #2c2621; font-weight: 500;">{{ p.nome }}</td>
+                <td style="color: #8c764d;">{{ p.volume_ml }}ml</td>
                 <td>{{ p.quantidade }}</td>
-                <td>R$ {{ "%.2f"|format(p.subtotal) }}</td>
+                <td style="font-family: 'Times New Roman', serif; font-size: 12pt;">R$ {{ "%.2f"|format(p.subtotal) }}</td>
             </tr>
             {% endfor %}
         </table>
-        <h3 style="text-align: right; margin-bottom: 20px; color: #2c2621;">Total a Pagar: R$ {{ "%.2f"|format(total) }}</h3>
+        <h3 style="text-align: right; margin-bottom: 30px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 18pt;">Total: R$ {{ "%.2f"|format(total) }}</h3>
         <div style="text-align: right;">
-            <a href="/carrinho/limpar" style="color: #d9534f; margin-right: 20px; text-decoration: none; font-weight: bold;">Esvaziar Carrinho</a>
-            <button class="btn-primary" style="width: 250px;" onclick="alert('Módulo de pagamento em construção para a próxima fase!')">Finalizar Compra</button>
+            <a href="/carrinho/limpar" style="color: #a39686; margin-right: 30px; text-decoration: none; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px;">Esvaziar Carrinho</a>
+            <button class="btn-primary" style="width: 250px;" onclick="alert('Módulo de pagamento em construção para a próxima fase!')">Finalizar Pedido</button>
         </div>
     {% else %}
-        <div style="text-align: center; padding: 50px;">
-            <p style="font-size: 14pt; color: #666; margin-bottom: 20px;">Seu carrinho está vazio.</p>
-            <a href="/" style="color: #b89758; font-weight: bold; text-decoration: none;">Voltar ao catálogo</a>
+        <div style="text-align: center; padding: 80px 0;">
+            <p style="font-size: 12pt; color: #a39686; margin-bottom: 30px; font-style: italic;">Sua seleção está vazia.</p>
+            <a href="/" class="btn-primary" style="text-decoration: none; padding: 12px 30px; display: inline-block; width: auto;">Descobrir Fragrâncias</a>
         </div>
     {% endif %}
     {% endblock %}
@@ -181,20 +189,19 @@ TEMPLATES = {
     'login.html': '''
     {% extends 'base.html' %}
     {% block content %}
-    <div style="max-width: 400px; margin: 0 auto; background: #fff; padding: 40px; border: 1px solid #e1d9ce; border-radius: 4px; margin-top: 50px;">
-        <h2 style="text-align: center; margin-bottom: 30px; font-family: 'Georgia', serif; color: #2c2621;">Acesso ao Sistema</h2>
+    <div style="max-width: 420px; margin: 40px auto 0; background: #fff; padding: 50px 40px; border: 1px solid #f2ecdf; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
+        <h2 style="text-align: center; margin-bottom: 40px; font-family: 'Times New Roman', serif; color: #2c2621; font-size: 20pt; letter-spacing: 1px;">Acesso Exclusivo</h2>
         <form method="POST" action="/login">
             <div class="form-group">
                 <label>E-mail de Acesso</label>
-                <input type="email" name="email" required placeholder="ex: admin@oliva.com">
+                <input type="email" name="email" required placeholder="seu@email.com">
             </div>
-            <div class="form-group" style="margin-bottom: 30px;">
+            <div class="form-group" style="margin-bottom: 40px;">
                 <label>Senha</label>
-                <input type="password" name="senha" required placeholder="Sua senha">
+                <input type="password" name="senha" required placeholder="••••••••">
             </div>
-            <button type="submit" class="btn-primary">Entrar na Plataforma</button>
+            <button type="submit" class="btn-primary">Entrar</button>
         </form>
-        <p style="text-align: center; margin-top: 20px; font-size: 9pt; color: #8c764d;">Dica: Use admin@oliva.com / admin123</p>
     </div>
     {% endblock %}
     ''',
@@ -202,70 +209,76 @@ TEMPLATES = {
     'admin.html': '''
     {% extends 'base.html' %}
     {% block content %}
-    <h2 class="page-title">Dashboard Gerencial</h2>
+    <h2 class="page-title">Visão Gerencial</h2>
     
     <div class="dashboard-cards">
         <div class="card">
-            <h3>Total de Decants no Catálogo</h3>
+            <h3>Fragrâncias Ativas</h3>
             <p>{{ total_produtos }}</p>
         </div>
         <div class="card">
-            <h3>Volume Total em Estoque (Unid)</h3>
+            <h3>Volume Total (Unid)</h3>
             <p>{{ estoque_total }}</p>
         </div>
         <div class="card">
-            <h3>Vendas Realizadas</h3>
-            <p>0</p> </div>
+            <h3>Pedidos Pendentes</h3>
+            <p>0</p>
+        </div>
     </div>
     
-    <p style="color: #666; font-size: 11pt;">Bem-vindo ao centro de comando da OLIVA. Utilize o menu superior para gerenciar seu estoque e analisar as comissões geradas pela operação.</p>
+    <div style="text-align: center; margin-top: 50px; padding: 30px; border: 1px solid #eae1d3; border-radius: 6px; background: #fff;">
+        <p style="color: #8c764d; font-size: 11pt; font-style: italic;">"A excelência está nos detalhes. Gerencie seu império olfativo pelo menu superior."</p>
+    </div>
     {% endblock %}
     ''',
     
     'estoque.html': '''
     {% extends 'base.html' %}
     {% block content %}
-    <h2 class="page-title">Controle de Estoque</h2>
+    <h2 class="page-title">Gestão de Inventário</h2>
     
-    <div style="background: #fff; padding: 25px; border: 1px solid #e1d9ce; margin-bottom: 40px; border-radius: 4px;">
-        <h3 style="margin-bottom: 15px; color: #8c764d;">Cadastrar Novo Decant</h3>
-        <form method="POST" action="/admin/estoque" style="display: flex; flex-wrap: wrap; gap: 15px;">
-            <div class="form-group" style="flex: 1; min-width: 200px;">
-                <label>Nome da Fragrância</label>
+    <div style="background: #fff; padding: 40px; border: 1px solid #f2ecdf; margin-bottom: 50px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.01);">
+        <h3 style="margin-bottom: 25px; color: #2c2621; font-weight: normal; font-family: 'Times New Roman', serif; font-size: 16pt;">Adicionar Nova Fragrância</h3>
+        <form method="POST" action="/admin/estoque" style="display: flex; flex-wrap: wrap; gap: 20px;">
+            <div class="form-group" style="flex: 1; min-width: 250px; margin-bottom: 0;">
+                <label>Nome do Perfume</label>
                 <input type="text" name="nome" required>
             </div>
-            <div class="form-group" style="width: 100px;">
-                <label>Volume (ml)</label>
+            <div class="form-group" style="width: 120px; margin-bottom: 0;">
+                <label>Vol (ml)</label>
                 <input type="number" name="volume_ml" required>
             </div>
-            <div class="form-group" style="width: 150px;">
+            <div class="form-group" style="width: 150px; margin-bottom: 0;">
                 <label>Preço (R$)</label>
                 <input type="number" step="0.01" name="preco" required>
             </div>
-            <div class="form-group" style="width: 100px;">
+            <div class="form-group" style="width: 120px; margin-bottom: 0;">
                 <label>Estoque</label>
                 <input type="number" name="estoque" required>
             </div>
-            <div class="form-group" style="width: 100%;">
-                <label>Descrição Olfativa</label>
+            <div class="form-group" style="width: 100%; margin-bottom: 20px;">
+                <label>Notas e Descrição Olfativa</label>
                 <textarea name="descricao" rows="2"></textarea>
             </div>
-            <button type="submit" class="btn-primary" style="width: 200px;">Salvar Produto</button>
+            <button type="submit" class="btn-primary" style="width: 250px; margin-left: auto;">Registrar no Sistema</button>
         </form>
     </div>
 
-    <h3>Inventário Atual</h3>
-    <br>
+    <h3 style="margin-bottom: 20px; color: #2c2621; font-weight: normal; font-family: 'Times New Roman', serif; font-size: 16pt;">Catálogo Atual</h3>
     <table>
-        <tr><th>ID</th><th>Produto</th><th>Vol</th><th>Preço</th><th>Estoque</th><th>Ação</th></tr>
+        <tr><th>ID</th><th>Fragrância</th><th>Vol</th><th>Preço</th><th>Estoque</th><th>Ação</th></tr>
         {% for p in produtos %}
         <tr>
-            <td>#{{ p.id }}</td>
-            <td><strong>{{ p.nome }}</strong></td>
-            <td>{{ p.volume_ml }}ml</td>
-            <td>R$ {{ "%.2f"|format(p.preco) }}</td>
-            <td><span style="padding: 5px 10px; background: {% if p.estoque < 5 %}#fff0f0{% else %}#eefaf2{% endif %}; border-radius: 20px; font-weight: bold;">{{ p.estoque }} un</span></td>
-            <td><a href="#" style="color: #b89758; text-decoration: none;">Editar</a></td>
+            <td style="color: #a39686;">#{{ p.id }}</td>
+            <td style="color: #2c2621; font-weight: 500;">{{ p.nome }}</td>
+            <td style="color: #8c764d;">{{ p.volume_ml }}ml</td>
+            <td style="font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.preco) }}</td>
+            <td>
+                <span style="padding: 6px 12px; background: {% if p.estoque < 5 %}#fffcf7{% else %}transparent{% endif %}; border: 1px solid {% if p.estoque < 5 %}#b89758{% else %}#eae1d3{% endif %}; border-radius: 4px; font-size: 9pt; color: #665b4f;">
+                    {{ p.estoque }} unid
+                </span>
+            </td>
+            <td><a href="#" style="color: #b89758; text-decoration: none; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px;">Editar</a></td>
         </tr>
         {% endfor %}
     </table>
@@ -275,21 +288,20 @@ TEMPLATES = {
     'comissao.html': '''
     {% extends 'base.html' %}
     {% block content %}
-    <h2 class="page-title">Relatório de Comissão de Vendas</h2>
+    <h2 class="page-title">Comissões Projetadas</h2>
     
-    <div class="alert" style="background: #eefaf2; border-color: #4cae4c; color: #3c763d;">
-        <strong>Simulação Ativa:</strong> As comissões abaixo estão projetadas com base em <strong>10%</strong> do valor de tabela dos produtos cadastrados no estoque atual.
+    <div class="alert" style="border-left-color: #2c2621; background-color: #fff;">
+        <span style="color: #2c2621; font-weight: bold;">Simulação Ativa:</span> Os valores abaixo representam a projeção de lucros baseada em uma margem de <strong>10%</strong> sobre o preço de prateleira.
     </div>
 
     <table>
-        <tr><th>ID Prod</th><th>Fragrância Vendida</th><th>Valor da Venda</th><th>Taxa</th><th>Sua Comissão Estimada</th></tr>
+        <tr><th>Ref.</th><th>Fragrância</th><th>Valor Tabela</th><th>Sua Margem (10%)</th></tr>
         {% for p in produtos %}
         <tr>
-            <td>#{{ p.id }}</td>
-            <td>{{ p.nome }} ({{ p.volume_ml }}ml)</td>
-            <td>R$ {{ "%.2f"|format(p.preco) }}</td>
-            <td>10%</td>
-            <td style="color: #2b542c; font-weight: bold; font-size: 12pt;">R$ {{ "%.2f"|format(p.preco * 0.10) }}</td>
+            <td style="color: #a39686;">#{{ p.id }}</td>
+            <td style="color: #2c2621;">{{ p.nome }} <span style="color: #8c764d; font-size: 9pt;">({{ p.volume_ml }}ml)</span></td>
+            <td style="font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.preco) }}</td>
+            <td style="color: #b89758; font-family: 'Times New Roman', serif; font-size: 13pt; font-weight: bold;">R$ {{ "%.2f"|format(p.preco * 0.10) }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -299,11 +311,10 @@ TEMPLATES = {
     'pedidos.html': '''
     {% extends 'base.html' %}
     {% block content %}
-    <h2 class="page-title">Meus Pedidos</h2>
-    <div style="background: #fff; padding: 40px; text-align: center; border: 1px dashed #ccc;">
-        <p style="color: #666;">Você ainda não possui pedidos finalizados.</p>
-        <br>
-        <a href="/" class="btn-primary" style="text-decoration: none; padding: 10px 30px;">Explorar Catálogo</a>
+    <h2 class="page-title">Minha Coleção</h2>
+    <div style="background: #fff; padding: 60px 20px; text-align: center; border: 1px solid #f2ecdf; border-radius: 6px;">
+        <p style="color: #a39686; font-size: 11pt; margin-bottom: 30px; font-style: italic;">Sua jornada olfativa ainda não começou.</p>
+        <a href="/" class="btn-primary" style="text-decoration: none; padding: 12px 30px; display: inline-block; width: auto;">Explorar o Catálogo</a>
     </div>
     {% endblock %}
     '''
@@ -323,7 +334,6 @@ def init_db():
     conn = get_db_connection()
     cur = conn.cursor()
     
-    # Cria tabelas se não existirem
     cur.execute('''
         CREATE TABLE IF NOT EXISTS usuarios (
             id SERIAL PRIMARY KEY,
@@ -345,7 +355,6 @@ def init_db():
         );
     ''')
     
-    # Cria a conta de Administrador automaticamente para você testar (se não existir)
     cur.execute('SELECT COUNT(*) FROM usuarios;')
     if cur.fetchone()[0] == 0:
         senha_hash = generate_password_hash('admin123')
@@ -354,12 +363,11 @@ def init_db():
             VALUES ('Admin Oliva', 'admin@oliva.com', %s, TRUE);
         ''', (senha_hash,))
 
-    # Insere produto teste apenas se a tabela estiver vazia
     cur.execute('SELECT COUNT(*) FROM produtos;')
     if cur.fetchone()[0] == 0:
         cur.execute('''
             INSERT INTO produtos (nome, descricao, preco, volume_ml, estoque, imagem_url) 
-            VALUES ('Oliva Imperial', 'Notas amadeiradas com especiarias raras.', 189.90, 10, 50, 'perfume.jpg');
+            VALUES ('Baccarat Rouge 540 Extrait', 'Assinatura olfativa amadeirada, com notas de jasmim e açafrão.', 245.00, 5, 12, 'luxo.jpg');
         ''')
     
     conn.commit()
@@ -381,7 +389,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'usuario_id' not in session:
-            flash('Por favor, faça o login para acessar esta área.', 'error')
+            flash('Área restrita. Por favor, identifique-se.', 'error')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
@@ -474,7 +482,6 @@ def login():
             session['nome'] = usuario['nome']
             session['is_admin'] = usuario['is_admin']
             
-            flash(f"Bem-vindo de volta, {usuario['nome']}!", "success")
             if usuario['is_admin']:
                 return redirect(url_for('admin_dashboard'))
             return redirect(url_for('meus_pedidos'))
@@ -525,7 +532,6 @@ def admin_estoque():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
-    # Processa o formulário de cadastro de novo produto
     if request.method == 'POST':
         nome = request.form['nome']
         volume_ml = request.form['volume_ml']
@@ -541,7 +547,6 @@ def admin_estoque():
         flash(f'{nome} adicionado ao estoque com sucesso!', 'success')
         return redirect(url_for('admin_estoque'))
     
-    # Carrega a tabela de inventário
     cur.execute('SELECT * FROM produtos ORDER BY id DESC;')
     produtos = cur.fetchall()
     cur.close()
@@ -554,7 +559,6 @@ def admin_estoque():
 def admin_comissao():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    # Busca os produtos para simular uma tabela de comissões
     cur.execute('SELECT id, nome, preco, volume_ml FROM produtos ORDER BY preco DESC;')
     produtos = cur.fetchall()
     cur.close()
