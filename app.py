@@ -15,7 +15,55 @@ def get_db_connection():
     conn = psycopg2.connect(os.environ['DATABASE_URL'])
     return conn
 
-# --- DECORATOR PARA PROTEGER ROTAS ---
+# --- INICIALIZAÇÃO AUTOMÁTICA DO BANCO ---
+def init_db():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    # 1. Cria a tabela de Usuários (se não existir)
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id SERIAL PRIMARY KEY,
+            nome VARCHAR(150) NOT NULL,
+            email VARCHAR(100) UNIQUE NOT NULL,
+            senha VARCHAR(255) NOT NULL,
+            is_admin BOOLEAN DEFAULT FALSE
+        );
+    ''')
+    
+    # 2. Cria a tabela de Produtos/Decants (se não existir)
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS produtos (
+            id SERIAL PRIMARY KEY,
+            nome VARCHAR(150) NOT NULL,
+            descricao TEXT,
+            preco NUMERIC(10,2) NOT NULL,
+            volume_ml INTEGER NOT NULL,
+            estoque INTEGER DEFAULT 0,
+            imagem_url VARCHAR(255)
+        );
+    ''')
+    
+    # 3. Insere o produto de teste apenas se a tabela estiver vazia
+    cur.execute('SELECT COUNT(*) FROM produtos;')
+    if cur.fetchone()[0] == 0:
+        cur.execute('''
+            INSERT INTO produtos (nome, descricao, preco, volume_ml, estoque, imagem_url) 
+            VALUES ('Oliva Imperial', 'Notas amadeiradas com especiarias raras.', 189.90, 10, 50, 'perfume.jpg');
+        ''')
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+
+# Executa a verificação e criação das tabelas assim que o app iniciar
+try:
+    init_db()
+    print("Banco de dados verificado/inicializado com sucesso!")
+except Exception as e:
+    print(f"Aguardando conexão com o banco... {e}")
+
+# --- DECORATORS PARA PROTEGER ROTAS ---
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -41,9 +89,8 @@ def admin_required(f):
 @app.route('/')
 def index():
     conn = get_db_connection()
-    # Usando RealDictCursor para o resultado vir como dicionário (igual ao mockup anterior)
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    # Busca apenas produtos com estoque positivo, conforme estrutura da tabela[cite: 1]
+    # Busca apenas produtos com estoque positivo
     cur.execute('SELECT * FROM produtos WHERE estoque > 0 ORDER BY id DESC;')
     produtos = cur.fetchall()
     cur.close()
@@ -108,7 +155,6 @@ def login():
         
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        # Consulta a tabela usuarios baseada no DDL do documento[cite: 1]
         cur.execute('SELECT * FROM usuarios WHERE email = %s;', (email,))
         usuario = cur.fetchone()
         cur.close()
@@ -139,7 +185,6 @@ def logout():
 @app.route('/meus-pedidos')
 @login_required
 def meus_pedidos():
-    # Aqui futuramente faremos o JOIN com a tabela de histórico de compras
     return render_template('pedidos.html')
 
 # ==========================================
@@ -169,7 +214,6 @@ def admin_novo_produto():
     
     conn = get_db_connection()
     cur = conn.cursor()
-    # Inserção baseada na tabela de catálogo de decants[cite: 1]
     cur.execute('''
         INSERT INTO produtos (nome, descricao, preco, volume_ml, estoque)
         VALUES (%s, %s, %s, %s, %s);
