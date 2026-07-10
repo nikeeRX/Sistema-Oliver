@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import jinja2
 from datetime import datetime
+import base64
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'chave_secreta_local_para_testes')
@@ -35,17 +36,24 @@ TEMPLATES = {
             .hero-section h2 { font-family: 'Times New Roman', Georgia, serif; font-size: 24pt; font-weight: normal; margin-bottom: 15px; color: #2c2621; letter-spacing: 2px; }
             .hero-section p { color: #8c764d; font-style: italic; font-size: 11pt; letter-spacing: 1px; }
             .page-title { font-family: 'Times New Roman', Georgia, serif; font-weight: normal; font-size: 22pt; margin-bottom: 30px; color: #2c2621; letter-spacing: 1px; text-align: center; }
+            
+            /* Grid de Produtos */
             .products-grid { display: flex; flex-wrap: wrap; gap: 2%; }
             .product-card { background: #ffffff; border: 1px solid #f2ecdf; width: 31%; margin-bottom: 40px; border-radius: 6px; overflow: hidden; transition: all 0.4s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
             .product-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(184, 151, 88, 0.1); border-color: #dfd5c6; }
             .product-img-placeholder { background: linear-gradient(135deg, #fffcf7 0%, #f4ede1 100%); height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid #f2ecdf; }
             .img-icon { font-size: 28pt; color: #b89758; margin-bottom: 10px; opacity: 0.8; }
             .product-img-placeholder span.marca { color: #8c764d; font-family: 'Times New Roman', Georgia, serif; font-size: 11pt; letter-spacing: 4px; text-transform: uppercase; opacity: 0.7; }
+            .product-img-real { height: 260px; width: 100%; border-bottom: 1px solid #f2ecdf; background-color: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+            .product-img-real img { width: 100%; height: 100%; object-fit: cover; }
+            
             .product-info { padding: 25px 20px; text-align: center; }
             .product-info h3 { font-size: 14pt; margin-bottom: 8px; color: #2c2621; font-weight: 500; letter-spacing: 1px; }
             .volumetria { font-size: 9pt; color: #b89758; font-weight: bold; margin-bottom: 12px; letter-spacing: 1px; }
             .description { font-size: 9.5pt; color: #7a7065; margin-bottom: 20px; height: 42px; overflow: hidden; line-height: 1.5; }
             .price { font-size: 15pt; color: #2c2621; margin-bottom: 20px; font-family: 'Times New Roman', Georgia, serif; }
+            
+            /* Dashboard e Forms */
             .dashboard-cards { display: flex; gap: 20px; margin-bottom: 40px; }
             .card { background: #ffffff; padding: 30px; border: 1px solid #eae1d3; border-top: 3px solid #b89758; flex: 1; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
             .card h3 { color: #8c764d; font-size: 9pt; margin-bottom: 15px; letter-spacing: 2px; }
@@ -54,13 +62,22 @@ TEMPLATES = {
             label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 9pt; color: #665b4f; text-transform: uppercase; letter-spacing: 1px; }
             input, textarea, select { width: 100%; padding: 12px; border: 1px solid #dfd5c6; border-radius: 4px; font-family: inherit; background-color: #fffcf7; transition: border 0.3s; }
             input:focus, textarea:focus, select:focus { outline: none; border-color: #b89758; }
+            input[type="file"] { background-color: #fff; padding: 9px; }
+            
+            /* Botões e Alertas */
             .btn-primary { background-color: #b89758; color: #ffffff; border: none; width: 100%; padding: 14px; font-size: 9pt; text-transform: uppercase; letter-spacing: 2px; font-weight: 500; cursor: pointer; border-radius: 4px; transition: all 0.3s; }
             .btn-primary:hover { background-color: #2c2621; color: #b89758; }
+            .btn-secondary { background-color: transparent; color: #665b4f; border: 1px solid #dfd5c6; padding: 14px 20px; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; text-transform: uppercase; font-size: 9pt; letter-spacing: 1px; transition: all 0.3s; }
+            .btn-secondary:hover { background-color: #f2ecdf; }
             .alert { padding: 15px; margin-bottom: 25px; border-radius: 4px; background-color: #fdfbf7; border-left: 4px solid #b89758; color: #665b4f; font-size: 10pt; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+            
+            /* Tabelas */
             table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
             th, td { padding: 18px 15px; text-align: left; border-bottom: 1px solid #f2ecdf; }
             th { background-color: #fffcf7; color: #8c764d; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; }
             tr:hover { background-color: #fdfbf7; }
+            
+            /* Rodape */
             .main-footer { text-align: center; padding: 50px 0; margin-top: 60px; font-size: 9pt; color: #a39686; border-top: 1px solid #eae1d3; letter-spacing: 1px; }
         </style>
     </head>
@@ -114,10 +131,19 @@ TEMPLATES = {
     <div class="products-grid">
         {% for produto in produtos %}
         <div class="product-card">
-            <div class="product-img-placeholder">
-                <div class="img-icon">✧</div>
-                <span class="marca">OLIVA</span>
-            </div>
+            
+            <!-- Imagem puxando direto do Banco de Dados via Base64 -->
+            {% if produto.imagem_base64 %}
+                <div class="product-img-real">
+                    <img src="data:image/jpeg;base64,{{ produto.imagem_base64 }}" alt="{{ produto.nome }}">
+                </div>
+            {% else %}
+                <div class="product-img-placeholder">
+                    <div class="img-icon">✧</div>
+                    <span class="marca">OLIVA</span>
+                </div>
+            {% endif %}
+
             <div class="product-info">
                 <h3>{{ produto.nome }}</h3>
                 <p class="volumetria">{{ produto.volume_ml }}ML &nbsp;|&nbsp; ESTOQUE: {{ produto.estoque }}</p>
@@ -129,7 +155,7 @@ TEMPLATES = {
             </div>
         </div>
         {% else %}
-        <p style="text-align: center; width: 100%; color: #8c764d; font-style: italic;">Nosso catálogo está sendo atualizado.</p>
+        <p style="text-align: center; width: 100%; color: #8c764d; font-style: italic;">Nosso catálogo está sendo atualizado com novas essências.</p>
         {% endfor %}
     </div>
     {% endblock %}
@@ -213,10 +239,10 @@ TEMPLATES = {
     
     <div style="display: flex; gap: 30px; margin-bottom: 50px; flex-wrap: wrap;">
         
-        <!-- 1. CADASTRAR NOVO PRODUTO -->
+        <!-- 1. CADASTRAR NOVO PRODUTO (Agora com Upload de Foto) -->
         <div style="background: #fff; padding: 35px; border: 1px solid #f2ecdf; border-radius: 6px; flex: 1; min-width: 400px;">
             <h3 style="margin-bottom: 25px; color: #2c2621; font-weight: normal; font-family: 'Times New Roman', serif; font-size: 16pt;">1. Cadastrar Nova Fragrância</h3>
-            <form method="POST" action="/admin/estoque" style="display: flex; flex-wrap: wrap; gap: 15px;">
+            <form method="POST" action="/admin/estoque" enctype="multipart/form-data" style="display: flex; flex-wrap: wrap; gap: 15px;">
                 <input type="hidden" name="action" value="novo_produto">
                 
                 <div class="form-group" style="width: 100%; margin-bottom: 0;">
@@ -242,6 +268,11 @@ TEMPLATES = {
                     <input type="number" step="0.01" name="preco" required placeholder="0.00">
                 </div>
                 
+                <div class="form-group" style="width: 100%; margin-bottom: 0;">
+                    <label>Foto do Produto (Upload)</label>
+                    <input type="file" name="imagem" accept="image/*">
+                </div>
+
                 <div class="form-group" style="width: 100%; margin-bottom: 15px;">
                     <label>Descrição Olfativa</label>
                     <textarea name="descricao" rows="2"></textarea>
@@ -285,8 +316,36 @@ TEMPLATES = {
         </div>
     </div>
 
-    <h3 style="margin-bottom: 20px; color: #2c2621; font-weight: normal; font-family: 'Times New Roman', serif; font-size: 16pt;">Histórico de Compras (Entradas)</h3>
+    <h3 style="margin-bottom: 20px; color: #2c2621; font-weight: normal; font-family: 'Times New Roman', serif; font-size: 16pt;">Catálogo Atual & Edição</h3>
     <table style="margin-bottom: 50px;">
+        <tr><th>Ref</th><th>Foto</th><th>Fragrância</th><th>Custo</th><th>Venda</th><th>Estoque</th><th>Ação</th></tr>
+        {% for p in produtos %}
+        <tr>
+            <td style="color: #a39686;">#{{ p.id }}</td>
+            <td>
+                {% if p.imagem_base64 %}
+                    <img src="data:image/jpeg;base64,{{ p.imagem_base64 }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #eae1d3;">
+                {% else %}
+                    <div style="width: 40px; height: 40px; background: #fcfaf7; border: 1px solid #eae1d3; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #b89758;">✧</div>
+                {% endif %}
+            </td>
+            <td style="color: #2c2621; font-weight: 500;">{{ p.nome }} <span style="color: #8c764d; font-size: 9pt;">({{ p.volume_ml }}ml)</span></td>
+            <td style="color: #666; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.custo) if p.custo else "0.00" }}</td>
+            <td style="font-family: 'Times New Roman', serif; color: #2c2621; font-weight: bold;">R$ {{ "%.2f"|format(p.preco) }}</td>
+            <td>
+                <span style="padding: 6px 12px; background: {% if p.estoque < 5 %}#fffcf7{% else %}transparent{% endif %}; border: 1px solid {% if p.estoque < 5 %}#b89758{% else %}#eae1d3{% endif %}; border-radius: 4px; font-size: 9pt; color: #665b4f;">
+                    {{ p.estoque }} un
+                </span>
+            </td>
+            <td>
+                <a href="/admin/produto/editar/{{ p.id }}" style="color: #b89758; text-decoration: none; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">Editar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3 style="margin-bottom: 20px; color: #2c2621; font-weight: normal; font-family: 'Times New Roman', serif; font-size: 16pt;">Histórico de Compras (Entradas)</h3>
+    <table>
         <tr><th>Data</th><th>Fragrância</th><th>Qtd</th><th>Custo Un.</th><th>Total Pago</th></tr>
         {% for entrada in entradas %}
         <tr>
@@ -300,24 +359,58 @@ TEMPLATES = {
         <tr><td colspan="5" style="text-align: center; color: #a39686; font-style: italic;">Nenhuma compra registrada no histórico.</td></tr>
         {% endfor %}
     </table>
+    {% endblock %}
+    ''',
+    
+    'editar_produto.html': '''
+    {% extends 'base.html' %}
+    {% block content %}
+    <h2 class="page-title">Editar Fragrância: {{ p.nome }}</h2>
+    
+    <div style="background: #fff; padding: 40px; border: 1px solid #f2ecdf; border-radius: 6px; max-width: 800px; margin: 0 auto; margin-bottom: 50px;">
+        <form method="POST" action="/admin/produto/editar/{{ p.id }}" enctype="multipart/form-data" style="display: flex; flex-wrap: wrap; gap: 20px;">
+            
+            <div class="form-group" style="width: 100%; margin-bottom: 0;">
+                <label>Nome do Perfume</label>
+                <input type="text" name="nome" required value="{{ p.nome }}">
+            </div>
+            
+            <div class="form-group" style="width: 47%; margin-bottom: 0;">
+                <label>Volumetria (ml)</label>
+                <input type="number" name="volume_ml" required value="{{ p.volume_ml }}">
+            </div>
+            <div class="form-group" style="width: 47%; margin-bottom: 0;">
+                <label>Custo Base Atual (R$)</label>
+                <input type="number" step="0.01" name="custo" required value="{{ p.custo }}">
+            </div>
+            
+            <div class="form-group" style="width: 47%; margin-bottom: 0;">
+                <label>Preço Venda (R$)</label>
+                <input type="number" step="0.01" name="preco" required value="{{ p.preco }}">
+            </div>
+            
+            <div class="form-group" style="width: 100%; margin-bottom: 0;">
+                <label>Atualizar Foto do Produto</label>
+                <input type="file" name="imagem" accept="image/*">
+                <p style="font-size: 8.5pt; color: #a39686; margin-top: 5px;">* Deixe em branco se não quiser alterar a foto atual.</p>
+                {% if p.imagem_base64 %}
+                    <div style="margin-top: 15px; border: 1px solid #eae1d3; padding: 5px; display: inline-block; border-radius: 4px; background: #fffcf7;">
+                        <img src="data:image/jpeg;base64,{{ p.imagem_base64 }}" alt="Preview" style="height: 80px; border-radius: 2px;">
+                    </div>
+                {% endif %}
+            </div>
 
-    <h3 style="margin-bottom: 20px; color: #2c2621; font-weight: normal; font-family: 'Times New Roman', serif; font-size: 16pt;">Catálogo Atual & Preços</h3>
-    <table>
-        <tr><th>Ref</th><th>Fragrância</th><th>Custo (Último)</th><th>Preço Venda</th><th>Estoque</th></tr>
-        {% for p in produtos %}
-        <tr>
-            <td style="color: #a39686;">#{{ p.id }}</td>
-            <td style="color: #2c2621; font-weight: 500;">{{ p.nome }} <span style="color: #8c764d; font-size: 9pt;">({{ p.volume_ml }}ml)</span></td>
-            <td style="color: #666; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.custo) if p.custo else "0.00" }}</td>
-            <td style="font-family: 'Times New Roman', serif; color: #2c2621; font-weight: bold;">R$ {{ "%.2f"|format(p.preco) }}</td>
-            <td>
-                <span style="padding: 6px 12px; background: {% if p.estoque < 5 %}#fffcf7{% else %}transparent{% endif %}; border: 1px solid {% if p.estoque < 5 %}#b89758{% else %}#eae1d3{% endif %}; border-radius: 4px; font-size: 9pt; color: #665b4f;">
-                    {{ p.estoque }} un
-                </span>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+            <div class="form-group" style="width: 100%; margin-bottom: 10px;">
+                <label>Descrição Olfativa</label>
+                <textarea name="descricao" rows="4">{{ p.descricao }}</textarea>
+            </div>
+            
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f2ecdf; padding-top: 25px; margin-top: 10px;">
+                <a href="/admin/estoque" class="btn-secondary">Voltar sem Salvar</a>
+                <button type="submit" class="btn-primary" style="width: auto; padding: 14px 50px;">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
     {% endblock %}
     ''',
     
@@ -369,7 +462,6 @@ def init_db():
     conn = get_db_connection()
     cur = conn.cursor()
     
-    # 1. Tabela de Usuários
     cur.execute('''
         CREATE TABLE IF NOT EXISTS usuarios (
             id SERIAL PRIMARY KEY,
@@ -380,7 +472,6 @@ def init_db():
         );
     ''')
     
-    # 2. Tabela de Produtos (Agora com suporte para custo/compra)
     cur.execute('''
         CREATE TABLE IF NOT EXISTS produtos (
             id SERIAL PRIMARY KEY,
@@ -393,12 +484,15 @@ def init_db():
         );
     ''')
     
-    # Injeção segura da coluna "Custo" para não apagar dados antigos
+    # Adiciona colunas para Custo e Imagem Base64 de forma segura
     cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='produtos' AND column_name='custo';")
     if not cur.fetchone():
         cur.execute("ALTER TABLE produtos ADD COLUMN custo NUMERIC(10,2) DEFAULT 0;")
         
-    # 3. Tabela do Histórico de Compras (Entradas)
+    cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='produtos' AND column_name='imagem_base64';")
+    if not cur.fetchone():
+        cur.execute("ALTER TABLE produtos ADD COLUMN imagem_base64 TEXT;")
+        
     cur.execute('''
         CREATE TABLE IF NOT EXISTS entradas_estoque (
             id SERIAL PRIMARY KEY,
@@ -409,7 +503,6 @@ def init_db():
         );
     ''')
     
-    # Conta Admin Padrão
     cur.execute('SELECT COUNT(*) FROM usuarios;')
     if cur.fetchone()[0] == 0:
         senha_hash = generate_password_hash('admin123')
@@ -424,7 +517,7 @@ def init_db():
 
 try:
     init_db()
-    print("Banco blindado! Tabela de histórico e custos preparadas.")
+    print("Banco blindado para Produção! Fotos em Base64 ativadas.")
 except Exception as e:
     print(f"Aguardando banco... {e}")
 
@@ -541,7 +634,7 @@ def meus_pedidos():
 
 
 # ==========================================
-# 5. ROTAS GERENCIAIS (A MÁGICA DO ESTOQUE)
+# 5. ROTAS GERENCIAIS (ESTOQUE, UPLOAD E EDIÇÃO)
 # ==========================================
 
 @app.route('/admin/dashboard')
@@ -566,7 +659,6 @@ def admin_estoque():
     if request.method == 'POST':
         action = request.form.get('action')
         
-        # Ação 1: Criar Produto do Zero
         if action == 'novo_produto':
             nome = request.form['nome']
             volume_ml = request.form['volume_ml']
@@ -575,14 +667,18 @@ def admin_estoque():
             estoque_inicial = int(request.form['estoque'])
             descricao = request.form.get('descricao', '')
             
-            # Insere no catálogo e pega o ID gerado
+            # Tratamento da Imagem enviada
+            imagem_file = request.files.get('imagem')
+            imagem_b64 = None
+            if imagem_file and imagem_file.filename != '':
+                imagem_b64 = base64.b64encode(imagem_file.read()).decode('utf-8')
+            
             cur.execute('''
-                INSERT INTO produtos (nome, descricao, preco, custo, volume_ml, estoque)
-                VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;
-            ''', (nome, descricao, preco, custo, volume_ml, estoque_inicial))
+                INSERT INTO produtos (nome, descricao, preco, custo, volume_ml, estoque, imagem_base64)
+                VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id;
+            ''', (nome, descricao, preco, custo, volume_ml, estoque_inicial, imagem_b64))
             novo_produto_id = cur.fetchone()['id']
             
-            # Se já lançou com estoque, grava no histórico de entradas automaticamente com a data de hoje (10/07)
             if estoque_inicial > 0:
                 cur.execute('''
                     INSERT INTO entradas_estoque (produto_id, quantidade, custo_unitario, data_compra)
@@ -591,20 +687,17 @@ def admin_estoque():
                 
             flash(f'{nome} adicionado ao catálogo!', 'success')
             
-        # Ação 2: Registrar Nova Compra (Reposição de Estoque)
         elif action == 'nova_entrada':
             produto_id = request.form['produto_id']
             quantidade = int(request.form['quantidade'])
             custo = request.form['custo']
             data_compra = request.form['data_compra']
             
-            # Grava no livro caixa do histórico
             cur.execute('''
                 INSERT INTO entradas_estoque (produto_id, quantidade, custo_unitario, data_compra)
                 VALUES (%s, %s, %s, %s);
             ''', (produto_id, quantidade, custo, data_compra))
             
-            # Atualiza a soma no catálogo principal
             cur.execute('''
                 UPDATE produtos 
                 SET estoque = estoque + %s, custo = %s 
@@ -616,14 +709,10 @@ def admin_estoque():
         conn.commit()
         return redirect(url_for('admin_estoque'))
     
-    # Renderização da Tela
     data_hoje = datetime.today().strftime('%Y-%m-%d')
-    
-    # Busca Catálogo
     cur.execute('SELECT * FROM produtos ORDER BY id DESC;')
     produtos = cur.fetchall()
     
-    # Busca Histórico de Entradas
     cur.execute('''
         SELECT e.quantidade, e.custo_unitario, TO_CHAR(e.data_compra, 'DD/MM/YYYY') as data_formatada, p.nome 
         FROM entradas_estoque e
@@ -636,6 +725,55 @@ def admin_estoque():
     conn.close()
     
     return render_template('estoque.html', produtos=produtos, entradas=entradas, data_hoje=data_hoje)
+
+@app.route('/admin/produto/editar/<int:id>', methods=['GET', 'POST'])
+@admin_required
+def admin_editar_produto(id):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    if request.method == 'POST':
+        nome = request.form['nome']
+        volume_ml = request.form['volume_ml']
+        preco = request.form['preco']
+        custo = request.form['custo']
+        descricao = request.form.get('descricao', '')
+        
+        # Tratamento da Imagem enviada na Edição
+        imagem_file = request.files.get('imagem')
+        
+        if imagem_file and imagem_file.filename != '':
+            imagem_b64 = base64.b64encode(imagem_file.read()).decode('utf-8')
+            cur.execute('''
+                UPDATE produtos 
+                SET nome=%s, volume_ml=%s, preco=%s, custo=%s, descricao=%s, imagem_base64=%s
+                WHERE id=%s
+            ''', (nome, volume_ml, preco, custo, descricao, imagem_b64, id))
+        else:
+            # Atualiza tudo, exceto a imagem (mantém a que já está lá)
+            cur.execute('''
+                UPDATE produtos 
+                SET nome=%s, volume_ml=%s, preco=%s, custo=%s, descricao=%s
+                WHERE id=%s
+            ''', (nome, volume_ml, preco, custo, descricao, id))
+            
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        flash('Fragrância atualizada com sucesso no sistema!', 'success')
+        return redirect(url_for('admin_estoque'))
+        
+    cur.execute('SELECT * FROM produtos WHERE id = %s', (id,))
+    produto = cur.fetchone()
+    cur.close()
+    conn.close()
+    
+    if not produto:
+        flash('Produto não encontrado.', 'error')
+        return redirect(url_for('admin_estoque'))
+        
+    return render_template('editar_produto.html', p=produto)
 
 @app.route('/admin/comissao')
 @admin_required
