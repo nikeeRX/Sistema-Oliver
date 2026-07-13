@@ -180,7 +180,7 @@ TEMPLATES = {
             </div>
         </div>
         {% else %}
-        <p style="text-align: center; width: 100%; color: #8c764d; font-style: italic;">Nosso catálogo está sendo updated.</p>
+        <p style="text-align: center; width: 100%; color: #8c764d; font-style: italic;">Nosso catálogo está sendo atualizado.</p>
         {% endfor %}
     </div>
     {% endblock %}
@@ -525,12 +525,151 @@ TEMPLATES = {
     {% endblock %}
     ''',
     
-    'estoque.html': '''{% extends 'base.html' %}{% block content %}<h2 class="page-title">Gestão de Estoque</h2><div style="display: flex; flex-direction: column; gap: 30px; margin-bottom: 50px;"><div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;"><h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">1. Cadastrar Novo Decant</h3><form method="POST" action="/admin/estoque" enctype="multipart/form-data" class="form-row"><input type="hidden" name="action" value="novo_produto"><div class="form-group col-100"><label>Nome do Perfume</label><input type="text" name="nome" required></div><div class="form-group col-50"><label>Volumetria (ml)</label><input type="number" name="volume_ml" required></div><div class="form-group col-50"><label>Estoque Inicial</label><input type="number" name="estoque" required value="0"></div><div class="form-group col-50"><label>Custo Pago (R$)</label><input type="number" step="0.01" name="custo" required placeholder="0.00"></div><div class="form-group col-50"><label>Preço Venda (R$)</label><input type="number" step="0.01" name="preco" required placeholder="0.00"></div><div class="form-group col-100"><label>Foto do Produto</label><input type="file" name="imagem" accept="image/*"></div><div class="form-group col-100"><label>Descrição Olfativa</label><textarea name="descricao" rows="2"></textarea></div><div class="col-100"><button type="submit" class="btn-primary">Criar Cadastro</button></div></form></div><div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;"><h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">2. Registrar Reposição</h3><form method="POST" action="/admin/estoque" class="form-row"><input type="hidden" name="action" value="nova_entrada"><div class="form-group col-100"><label>Selecione a Fragrância</label><select name="produto_id" required><option value="">-- Escolha --</option>{% for p in produtos %}<option value="{{ p.id }}">{{ p.nome }} ({{ p.volume_ml }}ml)</option>{% endfor %}</select></div><div class="form-group col-100"><label>Data da Compcra</label><input type="date" name="data_compra" required value="{{ data_hoje }}"></div><div class="form-group col-50"><label>Qtd Comprada</label><input type="number" name="quantidade" required min="1"></div><div class="form-group col-50"><label>Custo Unitário (R$)</label><input type="number" step="0.01" name="custo" required></div><div class="col-100"><button type="submit" class="btn-primary" style="background-color: #2c2621; color: #b89758;">Gravar Estoque</button></div></form></div></div><h3 style="margin-bottom: 15px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">Catálogo Atual & Edição</h3><div class="table-wrapper"><table><tr><th>Foto</th><th>Fragrância</th><th>Custo</th><th>Venda</th><th>Estoque</th><th>Ação</th></tr>{% for p in produtos %}<tr><td>{% if p.imagem_base64 %}<img src="data:image/jpeg;base64,{{ p.imagem_base64 }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #eae1d3;">{% else %}<div style="width: 40px; height: 40px; background: #fcfaf7; border: 1px solid #eae1d3; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #b89758;">✧</div>{% endif %}</td><td style="color: #2c2621; font-weight: 500; white-space: normal; min-width: 150px;">{{ p.nome }} <span style="color: #8c764d; font-size: 9pt;">({{ p.volume_ml }}ml)</span></td><td style="color: #666; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.custo) if p.custo else "0.00" }}</td><td style="font-family: 'Times New Roman', serif; color: #2c2621; font-weight: bold;">R$ {{ "%.2f"|format(p.preco) }}</td><td><span style="padding: 4px 10px; background: {% if p.estoque < 5 %}#fffcf7{% else %}transparent{% endif %}; border: 1px solid {% if p.estoque < 5 %}#b89758{% else %}#eae1d3{% endif %}; border-radius: 4px; font-size: 9pt; color: #665b4f;">{{ p.estoque }} un</span></td><td><a href="/admin/produto/editar/{{ p.id }}" style="color: #b89758; text-decoration: none; font-size: 9pt; text-transform: uppercase; font-weight: bold;">Editar</a></td></tr>{% endfor %}</table></div>{% endblock %}''',
-    'editar_produto.html': '''{% extends 'base.html' %}{% block content %}<h2 class="page-title">Editar Fragrância</h2><div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px; margin-bottom: 30px;"><form method="POST" action="/admin/produto/editar/{{ p.id }}" enctype="multipart/form-data" class="form-row"><div class="form-group col-100"><label>Nome do Perfume</label><input type="text" name="nome" required value="{{ p.nome }}"></div><div class="form-group col-50"><label>Volumetria (ml)</label><input type="number" name="volume_ml" required value="{{ p.volume_ml }}"></div><div class="form-group col-50"><label>Custo Base Atual (R$)</label><input type="number" step="0.01" name="custo" required value="{{ p.custo }}"></div><div class="form-group col-100"><label>Preço Venda (R$)</label><input type="number" step="0.01" name="preco" required value="{{ p.preco }}"></div><div class="form-group col-100"><label>Nova Foto (Deixe em branco para manter a atual)</label><input type="file" name="imagem" accept="image/*"></div><div class="form-group col-100"><label>Descrição Olfativa</label><textarea name="descricao" rows="4">{{ p.descricao }}</textarea></div><div class="col-100" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;"><button type="submit" class="btn-primary">Salvar Alterações</button><a href="/admin/estoque" class="btn-secondary">Voltar sem Salvar</a></div></form></div>{% endblock %}''',
-    'admin_aprovacoes.html': '''{% extends 'base.html' %}{% block content %}<h2 class="page-title">Aprovação de Revendedores</h2><div class="alert" style="background: #fff; border-left-color: #2c2621;">Gerencie as contas que solicitaram acesso ao programa de comissões e vendas exclusivas.</div><div class="table-wrapper"><table><tr><th>Data</th><th>Nome</th><th>CPF / WhatsApp</th><th>Email</th><th>Ação</th></tr>{% for v in revendedores %}<tr><td style="color: #a39686;">#{{ v.id }}</td><td style="color: #2c2621; font-weight: 500;">{{ v.nome }}</td><td style="color: #666;">{{ v.cpf }}<br><span style="font-size: 9pt;">{{ v.whatsapp }}</span></td><td>{{ v.email }}</td><td><form action="/admin/aprovar/{{ v.id }}" method="POST" style="display:inline;"><button type="submit" class="btn-primary" style="padding: 8px 15px; width: auto; font-size: 8pt;">Aprovar</button></form></td></tr>{% else %}<tr><td colspan="5" style="text-align: center; color: #a39686; font-style: italic;">Nenhuma solicitação pendente.</td></tr>{% endfor %}</table></div>{% endblock %}'''
+    'estoque.html': '''
+    {% extends 'base.html' %}
+    {% block content %}
+    <h2 class="page-title">Gestão de Estoque</h2>
+    <div style="display: flex; flex-direction: column; gap: 30px; margin-bottom: 50px;">
+        
+        <div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;">
+            <h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">1. Cadastrar Novo Decant</h3>
+            <form method="POST" action="/admin/estoque" enctype="multipart/form-data" class="form-row">
+                <input type="hidden" name="action" value="novo_produto">
+                <div class="form-group col-100"><label>Nome do Perfume</label><input type="text" name="nome" required></div>
+                <div class="form-group col-50"><label>Volumetria (ml)</label><input type="number" name="volume_ml" required></div>
+                <div class="form-group col-50"><label>Estoque Inicial</label><input type="number" name="estoque" required value="0"></div>
+                <div class="form-group col-50"><label>Custo Pago (R$)</label><input type="number" step="0.01" name="custo" required placeholder="0.00"></div>
+                <div class="form-group col-50"><label>Preço Venda (R$)</label><input type="number" step="0.01" name="preco" required placeholder="0.00"></div>
+                <div class="form-group col-100"><label>Foto do Produto</label><input type="file" name="imagem" accept="image/*"></div>
+                <div class="form-group col-100"><label>Descrição Olfativa</label><textarea name="descricao" rows="2"></textarea></div>
+                <div class="col-100"><button type="submit" class="btn-primary">Criar Cadastro</button></div>
+            </form>
+        </div>
+
+        <div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;">
+            <h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">2. Registrar Reposição</h3>
+            <form method="POST" action="/admin/estoque" class="form-row">
+                <input type="hidden" name="action" value="nova_entrada">
+                <div class="form-group col-100">
+                    <label>Selecione a Fragrância</label>
+                    <select name="produto_id" required>
+                        <option value="">-- Escolha --</option>
+                        {% for p in produtos %}
+                            <option value="{{ p.id }}">{{ p.nome }} ({{ p.volume_ml }}ml)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group col-100"><label>Data da Compra</label><input type="date" name="data_compra" required value="{{ data_hoje }}"></div>
+                <div class="form-group col-50"><label>Qtd Comprada</label><input type="number" name="quantidade" required min="1"></div>
+                <div class="form-group col-50"><label>Custo Unitário (R$)</label><input type="number" step="0.01" name="custo" required></div>
+                <div class="col-100"><button type="submit" class="btn-primary" style="background-color: #2c2621; color: #b89758;">Gravar Estoque</button></div>
+            </form>
+        </div>
+    </div>
+
+    <h3 style="margin-bottom: 15px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">Catálogo Atual & Edição</h3>
+    <div class="table-wrapper">
+        <table>
+            <tr><th>Foto</th><th>Fragrância</th><th>Custo</th><th>Venda</th><th>Estoque</th><th>Ação</th></tr>
+            {% for p in produtos %}
+            <tr>
+                <td>
+                    {% if p.imagem_base64 %}
+                        <img src="data:image/jpeg;base64,{{ p.imagem_base64 }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #eae1d3;">
+                    {% else %}
+                        <div style="width: 40px; height: 40px; background: #fcfaf7; border: 1px solid #eae1d3; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #b89758;">✧</div>
+                    {% endif %}
+                </td>
+                <td style="color: #2c2621; font-weight: 500; white-space: normal; min-width: 150px;">{{ p.nome }} <span style="color: #8c764d; font-size: 9pt;">({{ p.volume_ml }}ml)</span></td>
+                <td style="color: #666; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.custo) if p.custo else "0.00" }}</td>
+                <td style="font-family: 'Times New Roman', serif; color: #2c2621; font-weight: bold;">R$ {{ "%.2f"|format(p.preco) }}</td>
+                <td>
+                    <span style="padding: 4px 10px; background: {% if p.estoque < 5 %}#fffcf7{% else %}transparent{% endif %}; border: 1px solid {% if p.estoque < 5 %}#b89758{% else %}#eae1d3{% endif %}; border-radius: 4px; font-size: 9pt; color: #665b4f;">
+                        {{ p.estoque }} un
+                    </span>
+                </td>
+                <td>
+                    <a href="/admin/produto/editar/{{ p.id }}" style="color: #b89758; text-decoration: none; font-size: 9pt; text-transform: uppercase; font-weight: bold;">Editar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endblock %}
+    ''',
+    
+    'editar_produto.html': '''
+    {% extends 'base.html' %}
+    {% block content %}
+    <h2 class="page-title">Editar Fragrância</h2>
+    <div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px; margin-bottom: 30px;">
+        <form method="POST" action="/admin/produto/editar/{{ p.id }}" enctype="multipart/form-data" class="form-row">
+            <div class="form-group col-100">
+                <label>Nome do Perfume</label>
+                <input type="text" name="nome" required value="{{ p.nome }}">
+            </div>
+            <div class="form-group col-50">
+                <label>Volumetria (ml)</label>
+                <input type="number" name="volume_ml" required value="{{ p.volume_ml }}">
+            </div>
+            <div class="form-group col-50">
+                <label>Custo Base Atual (R$)</label>
+                <input type="number" step="0.01" name="custo" required value="{{ p.custo if p.custo is not none else '0.00' }}">
+            </div>
+            <div class="form-group col-100">
+                <label>Preço Venda (R$)</label>
+                <input type="number" step="0.01" name="preco" required value="{{ p.preco if p.preco is not none else '0.00' }}">
+            </div>
+            <div class="form-group col-100">
+                <label>Nova Foto (Deixe em branco para manter a atual)</label>
+                <input type="file" name="imagem" accept="image/*">
+            </div>
+            <div class="form-group col-100">
+                <label>Descrição Olfativa</label>
+                <textarea name="descricao" rows="4">{{ p.descricao }}</textarea>
+            </div>
+            <div class="col-100" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                <button type="submit" class="btn-primary">Salvar Alterações</button>
+                <a href="/admin/estoque" class="btn-secondary">Voltar sem Salvar</a>
+            </div>
+        </form>
+    </div>
+    {% endblock %}
+    ''',
+    
+    'admin_aprovacoes.html': '''
+    {% extends 'base.html' %}
+    {% block content %}
+    <h2 class="page-title">Aprovação de Revendedores</h2>
+    <div class="alert" style="background: #fff; border-left-color: #2c2621;">
+        Gerencie as contas que solicitaram acesso ao programa de comissões e vendas exclusivas.
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <tr><th>Data</th><th>Nome</th><th>CPF / WhatsApp</th><th>Email</th><th>Ação</th></tr>
+            {% for v in revendedores %}
+            <tr>
+                <td style="color: #a39686;">#{{ v.id }}</td>
+                <td style="color: #2c2621; font-weight: 500;">{{ v.nome }}</td>
+                <td style="color: #666;">{{ v.cpf }}<br><span style="font-size: 9pt;">{{ v.whatsapp }}</span></td>
+                <td>{{ v.email }}</td>
+                <td>
+                    <form action="/admin/aprovar/{{ v.id }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn-primary" style="padding: 8px 15px; width: auto; font-size: 8pt;">Aprovar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" style="text-align: center; color: #a39686; font-style: italic;">Nenhuma solicitação pendente.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endblock %}
+    '''
 }
 
 app.jinja_loader = jinja2.DictLoader(TEMPLATES)
+
 
 # ==========================================
 # 2. CONFIGURAÇÃO E INICIALIZAÇÃO DO BANCO
@@ -634,6 +773,7 @@ try:
 except Exception as e:
     print(f"Erro no banco: {e}")
 
+
 # ==========================================
 # 3. ROTAS DE SEGURANÇA E PROTEÇÃO
 # ==========================================
@@ -655,6 +795,7 @@ def admin_required(f):
             return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
+
 
 # ==========================================
 # 4. ROTAS PÚBLICAS E CARRINHO
@@ -747,7 +888,7 @@ def checkout():
     vendedor_id = session.get('vendedor_id_ref')
 
     cur.execute('''
-        INSERT INTO pedidos (cliente_id, seller_id, valor_total, comissao_total)
+        INSERT INTO pedidos (cliente_id, vendedor_id, valor_total, comissao_total)
         VALUES (%s, %s, %s, %s) RETURNING id;
     ''', (session['usuario_id'], vendedor_id, valor_total, comissao_total))
     pedido_id = cur.fetchone()['id']
@@ -804,7 +945,6 @@ def checkout():
         flash('O sistema está sem acesso externo no momento.', 'error')
         return redirect(url_for('carrinho'))
 
-# --- ROTA DE SUCESSO COORDENADA (SEM @LOGIN_REQUIRED PARA PREVENIR ERRO DE COOKIE) ---
 @app.route('/pagamento/sucesso/<int:pedido_id>')
 def pagamento_sucesso(pedido_id):
     conn = get_db_connection()
@@ -824,10 +964,8 @@ def pagamento_sucesso(pedido_id):
     flash('Pagamento Aprovado! Seu pedido já está sendo preparado.', 'success')
     return redirect(url_for('meus_pedidos'))
 
-# --- WEBHOOK PARA ATUALIZAÇÃO DO DASHBOARD EM TEMPO REAL ---
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    # Recebe a notificação silenciosa do Mercado Pago assim que o PIX é pago
     data = request.get_json()
     if data and data.get('type') == 'payment':
         payment_id = data.get('data', {}).get('id')
@@ -978,19 +1116,19 @@ def vendedor_painel():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
-    cur.execute("SELECT SUM(valor_total) FROM pedidos WHERE vendedor_id = %s AND status_pagamento = 'approved'", (session['usuario_id'],))
+    cur.execute("SELECT SUM(valor_total) FROM pedidos WHERE vendedor_id = %s AND status_pagamento = 'aprovado'", (session['usuario_id'],))
     total_vendas = cur.fetchone()['sum'] or 0.0
     
-    cur.execute("SELECT SUM(comissao_total) FROM pedidos WHERE vendedor_id = %s AND status_pagamento = 'approved' AND status_comissao = 'pendente'", (session['usuario_id'],))
+    cur.execute("SELECT SUM(comissao_total) FROM pedidos WHERE vendedor_id = %s AND status_pagamento = 'aprovado' AND status_comissao = 'pendente'", (session['usuario_id'],))
     comissao_pendente = cur.fetchone()['sum'] or 0.0
     
-    cur.execute("SELECT SUM(comissao_total) FROM pedidos WHERE vendedor_id = %s AND status_pagamento = 'approved' AND status_comissao = 'paga'", (session['usuario_id'],))
+    cur.execute("SELECT SUM(comissao_total) FROM pedidos WHERE vendedor_id = %s AND status_pagamento = 'aprovado' AND status_comissao = 'paga'", (session['usuario_id'],))
     comissao_paga = cur.fetchone()['sum'] or 0.0
     
     cur.execute('''
         SELECT p.id, p.valor_total, p.comissao_total, p.status_comissao, TO_CHAR(p.data_pedido, 'DD/MM/YYYY') as data_formatada, u.nome as cliente_nome
         FROM pedidos p JOIN usuarios u ON p.cliente_id = u.id
-        WHERE p.vendedor_id = %s AND p.status_pagamento = 'approved' ORDER BY p.id DESC;
+        WHERE p.vendedor_id = %s AND p.status_pagamento = 'aprovado' ORDER BY p.id DESC;
     ''', (session['usuario_id'],))
     vendas_raw = cur.fetchall()
     
@@ -1010,6 +1148,7 @@ def vendedor_painel():
     host_url = request.url_root.rstrip('/')
     return render_template('vendedor_painel.html', total_vendas=total_vendas, comissao_pendente=comissao_pendente, comissao_paga=comissao_paga, vendas=vendas, host_url=host_url)
 
+
 # ==========================================
 # 6. MÓDULO GERENCIAL E CONFIGURAÇÕES (ADMIN)
 # ==========================================
@@ -1019,11 +1158,11 @@ def vendedor_painel():
 def admin_dashboard():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT SUM(valor_total) FROM pedidos WHERE status_pagamento = 'approved';")
+    cur.execute("SELECT SUM(valor_total) FROM pedidos WHERE status_pagamento = 'aprovado';")
     faturamento = cur.fetchone()[0] or 0.0
     cur.execute('SELECT COUNT(*) FROM produtos;')
     total_produtos = cur.fetchone()[0]
-    cur.execute("SELECT COUNT(*) FROM pedidos WHERE status_pagamento = 'approved';")
+    cur.execute("SELECT COUNT(*) FROM pedidos WHERE status_pagamento = 'aprovado';")
     total_pedidos = cur.fetchone()[0]
     cur.execute("SELECT COUNT(*) FROM usuarios WHERE tipo='vendedor' AND aprovado=FALSE;")
     pendentes = cur.fetchone()[0]
@@ -1141,52 +1280,117 @@ def aprovar_revendedor(id):
     conn.commit(); cur.close(); conn.close()
     return redirect(url_for('admin_aprovacoes'))
 
+# --- ROTAS DE ESTOQUE - DESCOMPRIMIDAS E CORRIGIDAS (QUANTIDADE) ---
+
 @app.route('/admin/estoque', methods=['GET', 'POST'])
 @admin_required
 def admin_estoque():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    
     if request.method == 'POST':
         action = request.form.get('action')
+        
         if action == 'novo_produto':
-            n, v, p, c, e, d = request.form['nome'], request.form['volume_ml'], request.form['preco'], request.form['custo'], int(request.form['estoque']), request.form.get('descricao', '')
+            n = request.form['nome']
+            v = request.form['volume_ml']
+            p = request.form['preco']
+            c = request.form['custo']
+            e = int(request.form['estoque'])
+            d = request.form.get('descricao', '')
+            
             img = request.files.get('imagem')
-            img_b64 = base64.b64encode(img.read()).decode('utf-8') if img and img.filename != '' else None
-            cur.execute('''INSERT INTO produtos (nome, descricao, preco, custo, volume_ml, estoque, imagem_base64) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id;''', (n, d, p, c, v, e, img_b64))
+            img_b64 = None
+            if img and img.filename != '':
+                img_b64 = base64.b64encode(img.read()).decode('utf-8')
+                
+            cur.execute('''
+                INSERT INTO produtos (nome, descricao, preco, custo, volume_ml, estoque, imagem_base64) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id;
+            ''', (n, d, p, c, v, e, img_b64))
             novo_id = cur.fetchone()['id']
-            if e > 0: cur.execute('''INSERT INTO entradas_estoque (produto_id, quantity, custo_unitario, data_compra) VALUES (%s, %s, %s, CURRENT_DATE);''', (novo_id, e, c))
+            
+            if e > 0:
+                # ERRO CORRIGIDO: Era "quantity", agora é "quantidade" conforme o banco
+                cur.execute('''
+                    INSERT INTO entradas_estoque (produto_id, quantidade, custo_unitario, data_compra) 
+                    VALUES (%s, %s, %s, CURRENT_DATE);
+                ''', (novo_id, e, c))
+                
         elif action == 'nova_entrada':
-            pid, qtd, c, d = request.form['produto_id'], int(request.form['quantity']), request.form['custo'], request.form['data_compra']
-            cur.execute('''INSERT INTO entradas_estoque (produto_id, quantity, custo_unitario, data_compra) VALUES (%s, %s, %s, %s);''', (pid, qtd, c, d))
+            pid = request.form['produto_id']
+            # ERRO CORRIGIDO: Era request.form['quantity'], agora é 'quantidade'
+            qtd = int(request.form['quantidade'])
+            c = request.form['custo']
+            d = request.form['data_compra']
+            
+            cur.execute('''
+                INSERT INTO entradas_estoque (produto_id, quantidade, custo_unitario, data_compra) 
+                VALUES (%s, %s, %s, %s);
+            ''', (pid, qtd, c, d))
             cur.execute('UPDATE produtos SET estoque = estoque + %s, custo = %s WHERE id = %s;', (qtd, c, pid))
+            
         conn.commit()
+        cur.close()
+        conn.close()
         return redirect(url_for('admin_estoque'))
+        
     data_hoje = datetime.today().strftime('%Y-%m-%d')
     cur.execute('SELECT * FROM produtos ORDER BY id DESC;')
     p = cur.fetchall()
-    cur.execute('''SELECT e.quantity, e.custo_unitario, TO_CHAR(e.data_compra, 'DD/MM/YYYY') as data_formatada, p.nome FROM entradas_estoque e JOIN produtos p ON e.produto_id = p.id ORDER BY e.data_compra DESC, e.id DESC;''')
+    
+    # ERRO CORRIGIDO: e.quantity substituído por e.quantidade
+    cur.execute('''
+        SELECT e.quantidade, e.custo_unitario, TO_CHAR(e.data_compra, 'DD/MM/YYYY') as data_formatada, p.nome 
+        FROM entradas_estoque e 
+        JOIN produtos p ON e.produto_id = p.id 
+        ORDER BY e.data_compra DESC, e.id DESC;
+    ''')
     e = cur.fetchall()
-    cur.close(); conn.close()
+    
+    cur.close()
+    conn.close()
     return render_template('estoque.html', produtos=p, entradas=e, data_hoje=data_hoje)
+
 
 @app.route('/admin/produto/editar/<int:id>', methods=['GET', 'POST'])
 @admin_required
 def admin_editar_produto(id):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    
     if request.method == 'POST':
-        n, v, p, c, d = request.form['nome'], request.form['volume_ml'], request.form['preco'], request.form['custo'], request.form.get('descricao', '')
+        n = request.form['nome']
+        v = request.form['volume_ml']
+        p = request.form['preco']
+        c = request.form['custo']
+        d = request.form.get('descricao', '')
         img = request.files.get('imagem')
+        
         if img and img.filename != '':
             img_b64 = base64.b64encode(img.read()).decode('utf-8')
-            cur.execute('''UPDATE produtos SET nome=%s, volume_ml=%s, preco=%s, custo=%s, descricao=%s, imagem_base64=%s WHERE id=%s''', (n, v, p, c, d, img_b64, id))
+            cur.execute('''
+                UPDATE produtos SET nome=%s, volume_ml=%s, preco=%s, custo=%s, descricao=%s, imagem_base64=%s WHERE id=%s
+            ''', (n, v, p, c, d, img_b64, id))
         else:
-            cur.execute('''UPDATE produtos SET nome=%s, volume_ml=%s, preco=%s, custo=%s, descricao=%s WHERE id=%s''', (n, v, p, c, d, id))
-        conn.commit(); cur.close(); conn.close()
+            cur.execute('''
+                UPDATE produtos SET nome=%s, volume_ml=%s, preco=%s, custo=%s, descricao=%s WHERE id=%s
+            ''', (n, v, p, c, d, id))
+            
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash('Fragrância atualizada com sucesso no sistema!', 'success')
         return redirect(url_for('admin_estoque'))
+        
     cur.execute('SELECT * FROM produtos WHERE id = %s', (id,))
     p = cur.fetchone()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
+    
+    if not p:
+        return redirect(url_for('admin_estoque'))
+        
     return render_template('editar_produto.html', p=p)
 
 if __name__ == '__main__':
