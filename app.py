@@ -89,6 +89,7 @@ TEMPLATES = {
             .badge { padding: 5px 10px; border-radius: 4px; font-size: 8.5pt; font-weight: bold; text-transform: uppercase; }
             .badge-green { background: #eefaf2; color: #3c763d; border: 1px solid #4cae4c; }
             .badge-yellow { background: #fff8e1; color: #8a6d3b; border: 1px solid #faebcc; }
+            .badge-gray { background: #f5f5f5; color: #666; border: 1px solid #ccc; }
             
             .main-footer { text-align: center; padding: 40px 0; margin-top: auto; font-size: 9pt; color: #a39686; border-top: 1px solid #eae1d3; letter-spacing: 1px; width: 100%; background-color: #fcfaf7; }
             
@@ -473,19 +474,21 @@ TEMPLATES = {
                 <tr><th>Número do Pedido</th><th>Data da Compra</th><th>Valor Total</th><th>Status do Pagamento</th></tr>
                 {% for p in pedidos %}
                 <tr>
-                    <td style="color: #2c2621; font-weight: 500;">#{{ p.id }}</td>
+                    <td style="color: #2c2621; font-weight: 500; font-size: 11pt;">#{{ p.id }}</td>
                     <td style="color: #666;">{{ p.data_formatada }}</td>
-                    <td style="font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.valor_total) }}</td>
+                    <td style="font-family: 'Times New Roman', serif; font-size: 12pt;">R$ {{ "%.2f"|format(p.valor_total) }}</td>
                     <td>
                         {% if p.status_pagamento == 'aprovado' %}
                             <span class="badge badge-green">Pagamento Aprovado</span>
                         {% elif p.status_pagamento == 'in_process' or p.status_pagamento == 'em_analise' %}
-                            <span class="badge badge-yellow" style="background: #eef8ff; color: #31708f; border-color: #bce8f1;">Em Análise</span>
+                            <span class="badge badge-yellow" style="background: #eef8ff; color: #31708f; border-color: #bce8f1;">Em Análise pelo Banco</span>
                         {% else %}
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
                                 <span class="badge badge-yellow">Aguardando Pagamento</span>
                                 {% if p.mp_preference_id %}
-                                    <a href="https://www.mercadopago.com.br/checkout/v1/redirect?pref_id={{ p.mp_preference_id }}" target="_blank" class="btn-primary" style="padding: 6px 12px; font-size: 8pt; width: 120px; text-align: center; text-decoration: none; display: inline-block;">Pagar Agora</a>
+                                    <a href="https://www.mercadopago.com.br/checkout/v1/redirect?pref_id={{ p.mp_preference_id }}" class="btn-primary" style="padding: 8px 20px; font-size: 8pt; width: auto; text-decoration: none; margin: 0; background-color: #2c2621; color: #b89758;">💳 Pagar Agora</a>
+                                {% else %}
+                                    <span class="badge badge-gray">Link Inválido (Erro)</span>
                                 {% endif %}
                             </div>
                         {% endif %}
@@ -704,12 +707,12 @@ def checkout():
     
     cur.execute("SELECT valor FROM configuracoes WHERE chave='mp_access_token'")
     token_row = cur.fetchone()
-    if not token_row or not token_row['valor'] or token_row['valor'] == '':
+    if not token_row or not token_row['valor'] or token_row['valor'].strip() == '':
         flash('O administrador do site ainda não configurou o gateway de pagamento.', 'error')
         cur.close(); conn.close()
         return redirect(url_for('carrinho'))
     
-    mp_token = token_row['valor']
+    mp_token = token_row['valor'].strip()
     valor_total = 0.0
     itens_para_banco = []
     
@@ -738,14 +741,19 @@ def checkout():
         
     conn.commit()
     
+    # Tratamento para garantir HTTPS no retorno do Mercado Pago (Segurança obrigatória do MP)
     host_url = request.url_root.rstrip('/')
+    if host_url.startswith('http://') and 'localhost' not in host_url and '127.0.0.1' not in host_url:
+        host_url = host_url.replace('http://', 'https://')
+        
     headers = {"Authorization": f"Bearer {mp_token}", "Content-Type": "application/json"}
     payload = {
         "items": [
             {
                 "title": f"Pedido #{pedido_id} - OLIVA Decants",
                 "quantity": 1,
-                "unit_price": valor_total
+                "currency_id": "BRL",
+                "unit_price": float(valor_total)
             }
         ],
         "back_urls": {
@@ -764,18 +772,18 @@ def checkout():
             cur.execute("UPDATE pedidos SET mp_preference_id = %s WHERE id = %s", (response.json()['id'], pedido_id))
             conn.commit()
             
-            # Limpa o carrinho ao avançar pro pagamento, porque o pedido já foi gerado na aba "Meus Pedidos"
             session.pop('carrinho', None)
-            
             cur.close(); conn.close()
             return redirect(init_point)
         else:
+            # Caso o Mercado Pago rejeite, vamos saber o exato motivo!
+            erro_mp = response.json().get('message', 'Configuração de Token ou URL inválida.')
             cur.close(); conn.close()
-            flash('Erro de comunicação com o Mercado Pago.', 'error')
+            flash(f'Falha na integração MP: {erro_mp}', 'error')
             return redirect(url_for('carrinho'))
     except Exception as e:
         cur.close(); conn.close()
-        flash('O sistema está sem acesso ao Mercado Pago no momento.', 'error')
+        flash('O sistema está sem acesso externo no momento.', 'error')
         return redirect(url_for('carrinho'))
 
 @app.route('/pagamento/sucesso/<int:pedido_id>')
@@ -884,7 +892,6 @@ def logout():
 def meus_pedidos():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    # Busca a Preferência do Mercado Pago para gerar o link do botão "Pagar Agora"
     cur.execute('''
         SELECT id, valor_total, status_pagamento, mp_preference_id, TO_CHAR(data_pedido, 'DD/MM/YYYY HH24:MI') as data_formatada 
         FROM pedidos WHERE cliente_id = %s ORDER BY id DESC;
@@ -984,7 +991,7 @@ def admin_config():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     if request.method == 'POST':
-        cur.execute("UPDATE configuracoes SET valor = %s WHERE chave = 'mp_access_token'", (request.form['mp_access_token'],))
+        cur.execute("UPDATE configuracoes SET valor = %s WHERE chave = 'mp_access_token'", (request.form['mp_access_token'].strip(),))
         conn.commit()
         flash('Token do Mercado Pago salvo com sucesso!', 'success')
         return redirect(url_for('admin_config'))
