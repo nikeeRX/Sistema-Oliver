@@ -27,13 +27,18 @@ TEMPLATES = {
         <title>OLIVA - Fragrância em Decants</title>
         <style>
             body, h1, h2, h3, p, ul, form { margin: 0; padding: 0; box-sizing: border-box; }
-            body { background-color: #fcfaf7; color: #332d27; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 300; -webkit-font-smoothing: antialiased; }
+            /* Adicionado Flexbox no Body para garantir o Rodapé sempre no fundo */
+            body { background-color: #fcfaf7; color: #332d27; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 300; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; min-height: 100vh; }
+            
             .navbar { background-color: transparent; padding: 25px 0; border-bottom: 1px solid #eae1d3; }
-            .nav-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
+            .nav-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; width: 100%; }
             .logo-text { font-family: 'Times New Roman', Georgia, serif; font-size: 26pt; color: #b89758; text-decoration: none; letter-spacing: 8px; text-transform: uppercase; }
             .navbar nav a { color: #665b4f; text-decoration: none; margin-left: 20px; font-size: 10pt; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
             .navbar nav a:hover { color: #b89758; }
-            .content-container { max-width: 1100px; margin: 40px auto; padding: 0 20px; min-height: 60vh; }
+            
+            /* O flex: 1 empurra o rodapé para baixo independentemente do conteúdo */
+            .content-container { max-width: 1100px; width: 100%; margin: 40px auto; padding: 0 20px; flex: 1; }
+            
             .hero-section { text-align: center; margin-bottom: 50px; padding: 10px 0; }
             .hero-section h2 { font-family: 'Times New Roman', Georgia, serif; font-size: 22pt; margin-bottom: 15px; color: #2c2621; letter-spacing: 2px; }
             .hero-section p { color: #8c764d; font-style: italic; font-size: 11pt; letter-spacing: 1px; }
@@ -72,13 +77,16 @@ TEMPLATES = {
             .btn-secondary { background-color: transparent; color: #665b4f; border: 1px solid #dfd5c6; padding: 14px 20px; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; text-transform: uppercase; font-size: 9pt; text-align: center; }
             .btn-secondary:hover { background-color: #f2ecdf; }
             
-            .alert { padding: 15px; margin-bottom: 25px; border-radius: 4px; background-color: #fdfbf7; border-left: 4px solid #b89758; color: #665b4f; font-size: 10pt; }
+            .alert { padding: 15px; margin-bottom: 25px; border-radius: 4px; background-color: #fdfbf7; border-left: 4px solid #b89758; color: #665b4f; font-size: 10pt; width: 100%; }
             .alert-error { border-left-color: #d9534f; color: #d9534f; background-color: #fff0f0; }
             
             .table-wrapper { width: 100%; overflow-x: auto; margin-bottom: 30px; border-radius: 6px; background: #fff; border: 1px solid #f2ecdf; }
             table { width: 100%; border-collapse: collapse; min-width: 600px; }
             th, td { padding: 16px 15px; text-align: left; border-bottom: 1px solid #f2ecdf; white-space: nowrap; }
             th { background-color: #fffcf7; color: #8c764d; font-size: 9pt; text-transform: uppercase; font-weight: 500; }
+            
+            /* Rodapé com formatação blindada */
+            .main-footer { text-align: center; padding: 40px 0; margin-top: auto; font-size: 9pt; color: #a39686; border-top: 1px solid #eae1d3; letter-spacing: 1px; width: 100%; background-color: #fcfaf7; }
             
             @media (max-width: 768px) {
                 .nav-container { flex-direction: column; gap: 15px; text-align: center; }
@@ -204,7 +212,6 @@ TEMPLATES = {
     {% block content %}
     <div style="display: flex; flex-wrap: wrap; gap: 30px; max-width: 900px; margin: 0 auto; margin-top: 40px;">
         
-        <!-- Formulário de Login -->
         <div style="flex: 1; min-width: 300px; background: #fff; padding: 40px; border: 1px solid #f2ecdf; border-radius: 6px;">
             <h2 style="text-align: center; margin-bottom: 30px; font-family: 'Times New Roman', serif; color: #2c2621;">Já tenho cadastro</h2>
             <form method="POST" action="/login">
@@ -214,7 +221,6 @@ TEMPLATES = {
             </form>
         </div>
 
-        <!-- Formulário de Cadastro Cliente -->
         <div style="flex: 1; min-width: 300px; background: #fff; padding: 40px; border: 1px solid #f2ecdf; border-radius: 6px;">
             <h2 style="text-align: center; margin-bottom: 30px; font-family: 'Times New Roman', serif; color: #2c2621;">Criar Conta de Cliente</h2>
             <form method="POST" action="/cadastro/cliente">
@@ -306,7 +312,6 @@ TEMPLATES = {
     
     <div style="display: flex; flex-direction: column; gap: 30px; margin-bottom: 50px;">
         
-        <!-- 1. CADASTRAR NOVO PRODUTO -->
         <div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;">
             <h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">1. Cadastrar Novo Decant</h3>
             <form method="POST" action="/admin/estoque" enctype="multipart/form-data" class="form-row">
@@ -322,7 +327,6 @@ TEMPLATES = {
             </form>
         </div>
 
-        <!-- 2. REPOSIÇÃO DE ESTOQUE -->
         <div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;">
             <h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">2. Registrar Reposição</h3>
             <form method="POST" action="/admin/estoque" class="form-row">
@@ -851,7 +855,6 @@ def admin_editar_produto(id):
 
 @app.route('/admin/comissao')
 def admin_comissao():
-    # Rota mista: Se for Admin vê tudo, se for Vendedor vê só a tabela.
     if 'usuario_id' not in session or session.get('tipo') == 'cliente':
         return redirect(url_for('login'))
         
