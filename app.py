@@ -174,7 +174,7 @@ TEMPLATES = {
                 <p class="description">{{ produto.descricao }}</p>
                 <p class="price">R$ {{ "%.2f"|format(produto.preco) }}</p>
                 <form action="{{ url_for('adicionar_carrinho', id_produto=produto.id) }}" method="POST">
-                    <button type="submit" class="btn-primary">Adicionar</button>
+                    <button type="submit" class="btn-primary">Adicionar ao Carrinho</button>
                 </form>
             </div>
         </div>
@@ -358,8 +358,7 @@ TEMPLATES = {
     <div style="background: #fff; padding: 40px; border: 1px solid #f2ecdf; border-radius: 6px; max-width: 800px; margin: 0 auto;">
         <h3 style="color: #2c2621; margin-bottom: 15px;">API do Mercado Pago</h3>
         <p style="font-size: 10pt; color: #666; margin-bottom: 30px;">
-            Para que o site receba pagamentos reais em PIX e Cartão via Mercado Pago, você precisa gerar o seu <strong>Access Token (Produção)</strong>. 
-            Acesse o painel de desenvolvedor do Mercado Pago, crie uma aplicação e cole o código abaixo.
+            Para que o site receba pagamentos reais em PIX e Cartão via Mercado Pago, você precisa colar o seu <strong>Access Token (Produção)</strong> abaixo.
         </p>
         <form method="POST" action="/admin/configuracoes">
             <div class="form-group">
@@ -480,8 +479,15 @@ TEMPLATES = {
                     <td>
                         {% if p.status_pagamento == 'aprovado' %}
                             <span class="badge badge-green">Pagamento Aprovado</span>
+                        {% elif p.status_pagamento == 'in_process' or p.status_pagamento == 'em_analise' %}
+                            <span class="badge badge-yellow" style="background: #eef8ff; color: #31708f; border-color: #bce8f1;">Em Análise</span>
                         {% else %}
-                            <span class="badge badge-yellow">Aguardando Pagamento</span>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <span class="badge badge-yellow">Aguardando Pagamento</span>
+                                {% if p.mp_preference_id %}
+                                    <a href="https://www.mercadopago.com.br/checkout/v1/redirect?pref_id={{ p.mp_preference_id }}" target="_blank" class="btn-primary" style="padding: 6px 12px; font-size: 8pt; width: 120px; text-align: center; text-decoration: none; display: inline-block;">Pagar Agora</a>
+                                {% endif %}
+                            </div>
                         {% endif %}
                     </td>
                 </tr>
@@ -497,7 +503,6 @@ TEMPLATES = {
     {% endblock %}
     ''',
     
-    # As rotas antigas de Estoque foram mantidas idênticas e empacotadas aqui (minificadas no dict para não quebrar)
     'estoque.html': '''{% extends 'base.html' %}{% block content %}<h2 class="page-title">Gestão de Estoque</h2><div style="display: flex; flex-direction: column; gap: 30px; margin-bottom: 50px;"><div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;"><h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">1. Cadastrar Novo Decant</h3><form method="POST" action="/admin/estoque" enctype="multipart/form-data" class="form-row"><input type="hidden" name="action" value="novo_produto"><div class="form-group col-100"><label>Nome do Perfume</label><input type="text" name="nome" required></div><div class="form-group col-50"><label>Volumetria (ml)</label><input type="number" name="volume_ml" required></div><div class="form-group col-50"><label>Estoque Inicial</label><input type="number" name="estoque" required value="0"></div><div class="form-group col-50"><label>Custo Pago (R$)</label><input type="number" step="0.01" name="custo" required placeholder="0.00"></div><div class="form-group col-50"><label>Preço Venda (R$)</label><input type="number" step="0.01" name="preco" required placeholder="0.00"></div><div class="form-group col-100"><label>Foto do Produto</label><input type="file" name="imagem" accept="image/*"></div><div class="form-group col-100"><label>Descrição Olfativa</label><textarea name="descricao" rows="2"></textarea></div><div class="col-100"><button type="submit" class="btn-primary">Criar Cadastro</button></div></form></div><div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;"><h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">2. Registrar Reposição</h3><form method="POST" action="/admin/estoque" class="form-row"><input type="hidden" name="action" value="nova_entrada"><div class="form-group col-100"><label>Selecione a Fragrância</label><select name="produto_id" required><option value="">-- Escolha --</option>{% for p in produtos %}<option value="{{ p.id }}">{{ p.nome }} ({{ p.volume_ml }}ml)</option>{% endfor %}</select></div><div class="form-group col-100"><label>Data da Compra</label><input type="date" name="data_compra" required value="{{ data_hoje }}"></div><div class="form-group col-50"><label>Qtd Comprada</label><input type="number" name="quantidade" required min="1"></div><div class="form-group col-50"><label>Custo Unitário (R$)</label><input type="number" step="0.01" name="custo" required></div><div class="col-100"><button type="submit" class="btn-primary" style="background-color: #2c2621; color: #b89758;">Gravar Estoque</button></div></form></div></div><h3 style="margin-bottom: 15px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">Catálogo Atual & Edição</h3><div class="table-wrapper"><table><tr><th>Foto</th><th>Fragrância</th><th>Custo</th><th>Venda</th><th>Estoque</th><th>Ação</th></tr>{% for p in produtos %}<tr><td>{% if p.imagem_base64 %}<img src="data:image/jpeg;base64,{{ p.imagem_base64 }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #eae1d3;">{% else %}<div style="width: 40px; height: 40px; background: #fcfaf7; border: 1px solid #eae1d3; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #b89758;">✧</div>{% endif %}</td><td style="color: #2c2621; font-weight: 500; white-space: normal; min-width: 150px;">{{ p.nome }} <span style="color: #8c764d; font-size: 9pt;">({{ p.volume_ml }}ml)</span></td><td style="color: #666; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.custo) if p.custo else "0.00" }}</td><td style="font-family: 'Times New Roman', serif; color: #2c2621; font-weight: bold;">R$ {{ "%.2f"|format(p.preco) }}</td><td><span style="padding: 4px 10px; background: {% if p.estoque < 5 %}#fffcf7{% else %}transparent{% endif %}; border: 1px solid {% if p.estoque < 5 %}#b89758{% else %}#eae1d3{% endif %}; border-radius: 4px; font-size: 9pt; color: #665b4f;">{{ p.estoque }} un</span></td><td><a href="/admin/produto/editar/{{ p.id }}" style="color: #b89758; text-decoration: none; font-size: 9pt; text-transform: uppercase; font-weight: bold;">Editar</a></td></tr>{% endfor %}</table></div>{% endblock %}''',
     'editar_produto.html': '''{% extends 'base.html' %}{% block content %}<h2 class="page-title">Editar Fragrância</h2><div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px; margin-bottom: 30px;"><form method="POST" action="/admin/produto/editar/{{ p.id }}" enctype="multipart/form-data" class="form-row"><div class="form-group col-100"><label>Nome do Perfume</label><input type="text" name="nome" required value="{{ p.nome }}"></div><div class="form-group col-50"><label>Volumetria (ml)</label><input type="number" name="volume_ml" required value="{{ p.volume_ml }}"></div><div class="form-group col-50"><label>Custo Base Atual (R$)</label><input type="number" step="0.01" name="custo" required value="{{ p.custo }}"></div><div class="form-group col-100"><label>Preço Venda (R$)</label><input type="number" step="0.01" name="preco" required value="{{ p.preco }}"></div><div class="form-group col-100"><label>Nova Foto (Deixe em branco para manter a atual)</label><input type="file" name="imagem" accept="image/*"></div><div class="form-group col-100"><label>Descrição Olfativa</label><textarea name="descricao" rows="4">{{ p.descricao }}</textarea></div><div class="col-100" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;"><button type="submit" class="btn-primary">Salvar Alterações</button><a href="/admin/estoque" class="btn-secondary">Voltar sem Salvar</a></div></form></div>{% endblock %}''',
     'admin_aprovacoes.html': '''{% extends 'base.html' %}{% block content %}<h2 class="page-title">Aprovação de Revendedores</h2><div class="alert" style="background: #fff; border-left-color: #2c2621;">Gerencie as contas que solicitaram acesso ao programa de comissões e vendas exclusivas.</div><div class="table-wrapper"><table><tr><th>Data</th><th>Nome</th><th>CPF / WhatsApp</th><th>Email</th><th>Ação</th></tr>{% for v in revendedores %}<tr><td style="color: #a39686;">#{{ v.id }}</td><td style="color: #2c2621; font-weight: 500;">{{ v.nome }}</td><td style="color: #666;">{{ v.cpf }}<br><span style="font-size: 9pt;">{{ v.whatsapp }}</span></td><td>{{ v.email }}</td><td><form action="/admin/aprovar/{{ v.id }}" method="POST" style="display:inline;"><button type="submit" class="btn-primary" style="padding: 8px 15px; width: auto; font-size: 8pt;">Aprovar</button></form></td></tr>{% else %}<tr><td colspan="5" style="text-align: center; color: #a39686; font-style: italic;">Nenhuma solicitação pendente.</td></tr>{% endfor %}</table></div>{% endblock %}'''
@@ -516,7 +521,6 @@ def init_db():
     conn = get_db_connection()
     cur = conn.cursor()
     
-    # Usuários (Acessos)
     cur.execute('''
         CREATE TABLE IF NOT EXISTS usuarios (
             id SERIAL PRIMARY KEY,
@@ -531,7 +535,6 @@ def init_db():
         );
     ''')
     
-    # Produtos e Estoque
     cur.execute('''
         CREATE TABLE IF NOT EXISTS produtos (
             id SERIAL PRIMARY KEY,
@@ -545,6 +548,7 @@ def init_db():
             imagem_base64 TEXT
         );
     ''')
+    
     cur.execute('''
         CREATE TABLE IF NOT EXISTS entradas_estoque (
             id SERIAL PRIMARY KEY,
@@ -555,7 +559,6 @@ def init_db():
         );
     ''')
 
-    # Novas Tabelas: Configurações, Pedidos e Itens Vendidos (A Mágica Real)
     cur.execute('''
         CREATE TABLE IF NOT EXISTS configuracoes (
             id SERIAL PRIMARY KEY,
@@ -588,7 +591,6 @@ def init_db():
         );
     ''')
 
-    # Insere Config MP vazia
     cur.execute("INSERT INTO configuracoes (chave, valor) VALUES ('mp_access_token', '') ON CONFLICT DO NOTHING;")
 
     cur.execute("UPDATE usuarios SET tipo = 'admin', aprovado = TRUE WHERE is_admin = TRUE;")
@@ -606,7 +608,7 @@ def init_db():
 
 try:
     init_db()
-    print("Banco atualizado: Pedidos, Itens, Comissões e MP integrados!")
+    print("Banco atualizado!")
 except Exception as e:
     print(f"Erro no banco: {e}")
 
@@ -633,12 +635,11 @@ def admin_required(f):
     return decorated_function
 
 # ==========================================
-# 4. ROTAS PÚBLICAS & CHECKOUT (O CORAÇÃO DA PLATAFORMA)
+# 4. ROTAS PÚBLICAS E CARRINHO
 # ==========================================
 
 @app.route('/')
 def index():
-    # Sistema de Link de Afiliado (Grava o vendedor_id na sessão do cliente)
     ref = request.args.get('ref')
     if ref:
         session['vendedor_id_ref'] = int(ref)
@@ -660,8 +661,8 @@ def carrinho():
     if carrinho_itens:
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        for id_produto, qtd in carrinho_itens.items():
-            cur.execute('SELECT id, nome, preco, volume_ml FROM produtos WHERE id = %s;', (id_produto,))
+        for id_produto_str, qtd in carrinho_itens.items():
+            cur.execute('SELECT id, nome, preco, volume_ml FROM produtos WHERE id = %s;', (int(id_produto_str),))
             produto = cur.fetchone()
             if produto:
                 produto['quantidade'] = qtd
@@ -675,12 +676,12 @@ def carrinho():
 
 @app.route('/carrinho/adicionar/<int:id_produto>', methods=['POST'])
 def adicionar_carrinho(id_produto):
-    if 'carrinho' not in session: session['carrinho'] = {}
-    carrinho = session['carrinho']
+    carrinho = dict(session.get('carrinho', {}))
     id_str = str(id_produto)
     carrinho[id_str] = carrinho.get(id_str, 0) + 1
     session['carrinho'] = carrinho
     session.modified = True
+    
     flash("Fragrância adicionada ao carrinho!", "success")
     return redirect(url_for('index'))
 
@@ -701,7 +702,6 @@ def checkout():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
-    # 1. Pega o Token do Admin
     cur.execute("SELECT valor FROM configuracoes WHERE chave='mp_access_token'")
     token_row = cur.fetchone()
     if not token_row or not token_row['valor'] or token_row['valor'] == '':
@@ -710,30 +710,26 @@ def checkout():
         return redirect(url_for('carrinho'))
     
     mp_token = token_row['valor']
-    
-    # 2. Calcula os totais e comissões (10%)
     valor_total = 0.0
     itens_para_banco = []
     
-    for id_produto, qtd in carrinho_itens.items():
-        cur.execute('SELECT preco FROM produtos WHERE id = %s;', (id_produto,))
+    for id_produto_str, qtd in carrinho_itens.items():
+        cur.execute('SELECT preco FROM produtos WHERE id = %s;', (int(id_produto_str),))
         p = cur.fetchone()
         if p:
             preco_unitario = float(p['preco'])
             valor_total += preco_unitario * qtd
-            itens_para_banco.append((id_produto, qtd, preco_unitario))
+            itens_para_banco.append((int(id_produto_str), qtd, preco_unitario))
             
-    comissao_total = valor_total * 0.10 # Regra de 10%
-    vendedor_id = session.get('vendedor_id_ref') # Puxa do link do afiliado
+    comissao_total = valor_total * 0.10
+    vendedor_id = session.get('vendedor_id_ref')
 
-    # 3. Cria o Pedido no Banco
     cur.execute('''
         INSERT INTO pedidos (cliente_id, vendedor_id, valor_total, comissao_total)
         VALUES (%s, %s, %s, %s) RETURNING id;
     ''', (session['usuario_id'], vendedor_id, valor_total, comissao_total))
     pedido_id = cur.fetchone()['id']
     
-    # Insere os itens
     for id_produto, qtd, preco in itens_para_banco:
         cur.execute('''
             INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, preco_unitario)
@@ -742,7 +738,6 @@ def checkout():
         
     conn.commit()
     
-    # 4. Cria a Preferência no Mercado Pago via API
     host_url = request.url_root.rstrip('/')
     headers = {"Authorization": f"Bearer {mp_token}", "Content-Type": "application/json"}
     payload = {
@@ -755,27 +750,32 @@ def checkout():
         ],
         "back_urls": {
             "success": f"{host_url}/pagamento/sucesso/{pedido_id}",
-            "failure": f"{host_url}/carrinho",
-            "pending": f"{host_url}/carrinho"
+            "failure": f"{host_url}/meus-pedidos",
+            "pending": f"{host_url}/meus-pedidos"
         },
         "auto_return": "approved",
         "external_reference": str(pedido_id)
     }
     
-    response = requests.post("https://api.mercadopago.com/checkout/preferences", json=payload, headers=headers)
-    
-    if response.status_code in [200, 201]:
-        init_point = response.json()['init_point']
-        # Salva o preference ID no banco
-        cur.execute("UPDATE pedidos SET mp_preference_id = %s WHERE id = %s", (response.json()['id'], pedido_id))
-        conn.commit()
+    try:
+        response = requests.post("https://api.mercadopago.com/checkout/preferences", json=payload, headers=headers)
+        if response.status_code in [200, 201]:
+            init_point = response.json()['init_point']
+            cur.execute("UPDATE pedidos SET mp_preference_id = %s WHERE id = %s", (response.json()['id'], pedido_id))
+            conn.commit()
+            
+            # Limpa o carrinho ao avançar pro pagamento, porque o pedido já foi gerado na aba "Meus Pedidos"
+            session.pop('carrinho', None)
+            
+            cur.close(); conn.close()
+            return redirect(init_point)
+        else:
+            cur.close(); conn.close()
+            flash('Erro de comunicação com o Mercado Pago.', 'error')
+            return redirect(url_for('carrinho'))
+    except Exception as e:
         cur.close(); conn.close()
-        
-        # Redireciona o cliente para a tela de pagamento do PIX/Cartão do Mercado Pago
-        return redirect(init_point)
-    else:
-        cur.close(); conn.close()
-        flash('Erro de comunicação com o Mercado Pago. Verifique as configurações da API.', 'error')
+        flash('O sistema está sem acesso ao Mercado Pago no momento.', 'error')
         return redirect(url_for('carrinho'))
 
 @app.route('/pagamento/sucesso/<int:pedido_id>')
@@ -783,21 +783,14 @@ def checkout():
 def pagamento_sucesso(pedido_id):
     conn = get_db_connection()
     cur = conn.cursor()
-    
-    # Atualiza Status do Pagamento
     cur.execute("UPDATE pedidos SET status_pagamento = 'aprovado' WHERE id = %s", (pedido_id,))
-    
-    # Abate do Estoque
     cur.execute("SELECT produto_id, quantidade FROM itens_pedido WHERE pedido_id = %s", (pedido_id,))
     itens = cur.fetchall()
     for item in itens:
         cur.execute("UPDATE produtos SET estoque = estoque - %s WHERE id = %s", (item[1], item[0]))
-        
     conn.commit()
-    cur.close()
-    conn.close()
+    cur.close(); conn.close()
     
-    session.pop('carrinho', None) # Limpa o carrinho
     flash('Pagamento Aprovado! Seu pedido já está sendo preparado.', 'success')
     return redirect(url_for('meus_pedidos'))
 
@@ -854,8 +847,7 @@ def cadastro_cliente():
     except:
         flash('E-mail ou CPF já cadastrado.', 'error')
     finally:
-        cur.close()
-        conn.close()
+        cur.close(); conn.close()
     return redirect(url_for('login'))
 
 @app.route('/seja-revendedor', methods=['GET'])
@@ -878,8 +870,7 @@ def cadastro_revendedor():
     except:
         flash('E-mail ou CPF já cadastrado.', 'error')
     finally:
-        cur.close()
-        conn.close()
+        cur.close(); conn.close()
     return redirect(url_for('index'))
 
 @app.route('/logout')
@@ -893,8 +884,9 @@ def logout():
 def meus_pedidos():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    # Busca a Preferência do Mercado Pago para gerar o link do botão "Pagar Agora"
     cur.execute('''
-        SELECT id, valor_total, status_pagamento, TO_CHAR(data_pedido, 'DD/MM/YYYY HH24:MI') as data_formatada 
+        SELECT id, valor_total, status_pagamento, mp_preference_id, TO_CHAR(data_pedido, 'DD/MM/YYYY HH24:MI') as data_formatada 
         FROM pedidos WHERE cliente_id = %s ORDER BY id DESC;
     ''', (session['usuario_id'],))
     pedidos = cur.fetchall()
@@ -909,18 +901,15 @@ def vendedor_painel():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
-    # 1. Total Vendido
     cur.execute("SELECT SUM(valor_total) FROM pedidos WHERE vendedor_id = %s AND status_pagamento = 'aprovado'", (session['usuario_id'],))
     total_vendas = cur.fetchone()['sum'] or 0.0
     
-    # 2. Comissões (Pendentes e Pagas)
     cur.execute("SELECT SUM(comissao_total) FROM pedidos WHERE vendedor_id = %s AND status_pagamento = 'aprovado' AND status_comissao = 'pendente'", (session['usuario_id'],))
     comissao_pendente = cur.fetchone()['sum'] or 0.0
     
     cur.execute("SELECT SUM(comissao_total) FROM pedidos WHERE vendedor_id = %s AND status_pagamento = 'aprovado' AND status_comissao = 'paga'", (session['usuario_id'],))
     comissao_paga = cur.fetchone()['sum'] or 0.0
     
-    # 3. Lista de Vendas p/ Clientes
     cur.execute('''
         SELECT p.id, p.valor_total, p.comissao_total, p.status_comissao, TO_CHAR(p.data_pedido, 'DD/MM/YYYY') as data_formatada, u.nome as cliente_nome
         FROM pedidos p JOIN usuarios u ON p.cliente_id = u.id
@@ -952,7 +941,6 @@ def admin_dashboard():
     cur.close(); conn.close()
     return render_template('admin.html', faturamento=faturamento, total_produtos=total_produtos, total_pedidos=total_pedidos, pendentes=pendentes)
 
-# --- USUÁRIOS ---
 @app.route('/admin/usuarios')
 @admin_required
 def admin_usuarios():
@@ -990,7 +978,6 @@ def admin_excluir_usuario(id):
     flash('Usuário removido da base de dados.', 'success')
     return redirect(url_for('admin_usuarios'))
 
-# --- CONFIGURAÇÕES MP ---
 @app.route('/admin/configuracoes', methods=['GET', 'POST'])
 @admin_required
 def admin_config():
@@ -1007,7 +994,6 @@ def admin_config():
     cur.close(); conn.close()
     return render_template('admin_config.html', mp_token=mp_token)
 
-# --- COMISSÕES & VENDAS GERAIS ---
 @app.route('/admin/comissao')
 @admin_required
 def admin_comissoes_gerais():
@@ -1035,8 +1021,6 @@ def pagar_comissao(id):
     flash('Comissão marcada como PAGA e repassada ao vendedor.', 'success')
     return redirect(url_for('admin_comissoes_gerais'))
 
-# --- ROTAS LEGADAS OCULTAS PARA MINIFICAR ESPAÇO NO ARQUIVO (ESTOQUE, APROVAÇÃO, PRODUTOS) ---
-# Mantendo apenas o apontamento funcional para não quebrar a lógica
 @app.route('/admin/aprovacoes')
 @admin_required
 def admin_aprovacoes():
