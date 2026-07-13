@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'chave_secreta_local_para_testes')
 
 # ==========================================
-# 1. FRONTEND RAIZ EMBUTIDO (HTML + CSS)
+# 1. FRONTEND RAIZ EMBUTIDO (HTML + CSS) - MOBILE & RESPONSIVO
 # ==========================================
 
 TEMPLATES = {
@@ -21,64 +21,104 @@ TEMPLATES = {
     <html lang="pt-BR">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="theme-color" content="#2c2621">
+        
         <title>OLIVA - Fragrância em Decants</title>
         <style>
+            /* Reset e Tipografia */
             body, h1, h2, h3, p, ul, form { margin: 0; padding: 0; box-sizing: border-box; }
-            body { background-color: #fcfaf7; color: #332d27; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 300; }
-            .navbar { background-color: transparent; padding: 30px 0; border-bottom: 1px solid #eae1d3; }
+            body { background-color: #fcfaf7; color: #332d27; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 300; -webkit-font-smoothing: antialiased; }
+            
+            /* Navbar */
+            .navbar { background-color: transparent; padding: 25px 0; border-bottom: 1px solid #eae1d3; }
             .nav-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
             .logo-text { font-family: 'Times New Roman', Georgia, serif; font-size: 26pt; font-weight: normal; color: #b89758; text-decoration: none; letter-spacing: 8px; text-transform: uppercase; }
-            .navbar nav a { color: #665b4f; text-decoration: none; margin-left: 25px; font-size: 10pt; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
+            .navbar nav a { color: #665b4f; text-decoration: none; margin-left: 20px; font-size: 10pt; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
             .navbar nav a:hover { color: #b89758; }
-            .content-container { max-width: 1100px; margin: 50px auto; padding: 0 20px; min-height: 60vh; }
-            .hero-section { text-align: center; margin-bottom: 60px; padding: 20px 0; }
-            .hero-section h2 { font-family: 'Times New Roman', Georgia, serif; font-size: 24pt; font-weight: normal; margin-bottom: 15px; color: #2c2621; letter-spacing: 2px; }
+            
+            /* Container Principal */
+            .content-container { max-width: 1100px; margin: 40px auto; padding: 0 20px; min-height: 60vh; }
+            .hero-section { text-align: center; margin-bottom: 50px; padding: 10px 0; }
+            .hero-section h2 { font-family: 'Times New Roman', Georgia, serif; font-size: 22pt; font-weight: normal; margin-bottom: 15px; color: #2c2621; letter-spacing: 2px; }
             .hero-section p { color: #8c764d; font-style: italic; font-size: 11pt; letter-spacing: 1px; }
-            .page-title { font-family: 'Times New Roman', Georgia, serif; font-weight: normal; font-size: 22pt; margin-bottom: 30px; color: #2c2621; letter-spacing: 1px; text-align: center; }
+            .page-title { font-family: 'Times New Roman', Georgia, serif; font-weight: normal; font-size: 20pt; margin-bottom: 30px; color: #2c2621; letter-spacing: 1px; text-align: center; }
             
             /* Grid de Produtos */
             .products-grid { display: flex; flex-wrap: wrap; gap: 2%; }
-            .product-card { background: #ffffff; border: 1px solid #f2ecdf; width: 31%; margin-bottom: 40px; border-radius: 6px; overflow: hidden; transition: all 0.4s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+            .product-card { background: #ffffff; border: 1px solid #f2ecdf; width: 32%; margin-bottom: 30px; border-radius: 6px; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
             .product-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(184, 151, 88, 0.1); border-color: #dfd5c6; }
             .product-img-placeholder { background: linear-gradient(135deg, #fffcf7 0%, #f4ede1 100%); height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid #f2ecdf; }
             .img-icon { font-size: 28pt; color: #b89758; margin-bottom: 10px; opacity: 0.8; }
             .product-img-placeholder span.marca { color: #8c764d; font-family: 'Times New Roman', Georgia, serif; font-size: 11pt; letter-spacing: 4px; text-transform: uppercase; opacity: 0.7; }
             .product-img-real { height: 260px; width: 100%; border-bottom: 1px solid #f2ecdf; background-color: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; }
             .product-img-real img { width: 100%; height: 100%; object-fit: cover; }
-            
             .product-info { padding: 25px 20px; text-align: center; }
-            .product-info h3 { font-size: 14pt; margin-bottom: 8px; color: #2c2621; font-weight: 500; letter-spacing: 1px; }
-            .volumetria { font-size: 9pt; color: #b89758; font-weight: bold; margin-bottom: 12px; letter-spacing: 1px; }
+            .product-info h3 { font-size: 13pt; margin-bottom: 8px; color: #2c2621; font-weight: 500; letter-spacing: 1px; }
+            .volumetria { font-size: 8.5pt; color: #b89758; font-weight: bold; margin-bottom: 12px; letter-spacing: 1px; }
             .description { font-size: 9.5pt; color: #7a7065; margin-bottom: 20px; height: 42px; overflow: hidden; line-height: 1.5; }
-            .price { font-size: 15pt; color: #2c2621; margin-bottom: 20px; font-family: 'Times New Roman', Georgia, serif; }
+            .price { font-size: 14pt; color: #2c2621; margin-bottom: 20px; font-family: 'Times New Roman', Georgia, serif; }
             
-            /* Dashboard e Forms */
+            /* Dashboard */
             .dashboard-cards { display: flex; gap: 20px; margin-bottom: 40px; }
             .card { background: #ffffff; padding: 30px; border: 1px solid #eae1d3; border-top: 3px solid #b89758; flex: 1; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
             .card h3 { color: #8c764d; font-size: 9pt; margin-bottom: 15px; letter-spacing: 2px; }
-            .card p { font-size: 28pt; color: #2c2621; font-family: 'Times New Roman', Georgia, serif; }
-            .form-group { margin-bottom: 20px; text-align: left; }
+            .card p { font-size: 26pt; color: #2c2621; font-family: 'Times New Roman', Georgia, serif; }
+            
+            /* Formulários Responsivos (Grids) */
+            .form-row { display: flex; flex-wrap: wrap; gap: 15px; }
+            .col-100 { width: 100%; }
+            .col-50 { width: calc(50% - 7.5px); }
+            .form-group { margin-bottom: 15px; text-align: left; }
             label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 9pt; color: #665b4f; text-transform: uppercase; letter-spacing: 1px; }
-            input, textarea, select { width: 100%; padding: 12px; border: 1px solid #dfd5c6; border-radius: 4px; font-family: inherit; background-color: #fffcf7; transition: border 0.3s; }
+            input, textarea, select { width: 100%; padding: 12px; border: 1px solid #dfd5c6; border-radius: 4px; font-family: inherit; background-color: #fffcf7; transition: border 0.3s; font-size: 11pt; }
             input:focus, textarea:focus, select:focus { outline: none; border-color: #b89758; }
             input[type="file"] { background-color: #fff; padding: 9px; }
             
             /* Botões e Alertas */
-            .btn-primary { background-color: #b89758; color: #ffffff; border: none; width: 100%; padding: 14px; font-size: 9pt; text-transform: uppercase; letter-spacing: 2px; font-weight: 500; cursor: pointer; border-radius: 4px; transition: all 0.3s; }
+            .btn-primary { background-color: #b89758; color: #ffffff; border: none; width: 100%; padding: 15px; font-size: 9pt; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; cursor: pointer; border-radius: 4px; transition: all 0.3s; }
             .btn-primary:hover { background-color: #2c2621; color: #b89758; }
-            .btn-secondary { background-color: transparent; color: #665b4f; border: 1px solid #dfd5c6; padding: 14px 20px; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; text-transform: uppercase; font-size: 9pt; letter-spacing: 1px; transition: all 0.3s; }
+            .btn-secondary { background-color: transparent; color: #665b4f; border: 1px solid #dfd5c6; padding: 14px 20px; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; text-transform: uppercase; font-size: 9pt; letter-spacing: 1px; transition: all 0.3s; text-align: center; }
             .btn-secondary:hover { background-color: #f2ecdf; }
             .alert { padding: 15px; margin-bottom: 25px; border-radius: 4px; background-color: #fdfbf7; border-left: 4px solid #b89758; color: #665b4f; font-size: 10pt; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
             
-            /* Tabelas */
-            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-            th, td { padding: 18px 15px; text-align: left; border-bottom: 1px solid #f2ecdf; }
+            /* Tabelas Mobile-Friendly (Rolagem) */
+            .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 30px; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); background: #fff; border: 1px solid #f2ecdf; }
+            table { width: 100%; border-collapse: collapse; min-width: 600px; }
+            th, td { padding: 16px 15px; text-align: left; border-bottom: 1px solid #f2ecdf; white-space: nowrap; }
             th { background-color: #fffcf7; color: #8c764d; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; }
             tr:hover { background-color: #fdfbf7; }
             
             /* Rodape */
-            .main-footer { text-align: center; padding: 50px 0; margin-top: 60px; font-size: 9pt; color: #a39686; border-top: 1px solid #eae1d3; letter-spacing: 1px; }
+            .main-footer { text-align: center; padding: 40px 0; margin-top: 50px; font-size: 9pt; color: #a39686; border-top: 1px solid #eae1d3; letter-spacing: 1px; }
+
+            /* ========================================= */
+            /* MAGIA DO MOBILE (MEDIA QUERIES)           */
+            /* ========================================= */
+            @media (max-width: 768px) {
+                .nav-container { flex-direction: column; gap: 15px; text-align: center; }
+                .navbar nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+                .navbar nav a { margin: 0; font-size: 9pt; }
+                
+                .product-card { width: 48%; }
+                .dashboard-cards { flex-direction: column; gap: 15px; }
+                
+                .col-50 { width: 100%; } /* Empilha os formulários no celular */
+                .form-row { flex-direction: column; gap: 0; }
+                
+                .hero-section h2 { font-size: 18pt; }
+                .page-title { font-size: 18pt; }
+            }
+            
+            @media (max-width: 480px) {
+                .product-card { width: 100%; margin-bottom: 25px; }
+                .logo-text { font-size: 22pt; }
+                .content-container { margin: 20px auto; }
+            }
         </style>
     </head>
     <body>
@@ -89,17 +129,17 @@ TEMPLATES = {
                     <a href="/">Catálogo</a>
                     {% if session.get('usuario_id') %}
                         {% if session.get('is_admin') %}
-                            <a href="/admin/dashboard">Dashboard</a>
+                            <a href="/admin/dashboard">Painel</a>
                             <a href="/admin/estoque">Estoque</a>
                             <a href="/admin/comissao">Comissões</a>
                         {% else %}
                             <a href="/carrinho">Carrinho</a>
-                            <a href="/meus-pedidos">Meus Pedidos</a>
+                            <a href="/meus-pedidos">Pedidos</a>
                         {% endif %}
                         <a href="/logout" style="color: #a39686;">Sair</a>
                     {% else %}
                         <a href="/carrinho">Carrinho</a>
-                        <a href="/login">Login</a>
+                        <a href="/login">Acesso</a>
                     {% endif %}
                 </nav>
             </div>
@@ -115,7 +155,7 @@ TEMPLATES = {
             {% block content %}{% endblock %}
         </main>
         <footer class="main-footer">
-            <p>OLIVA &copy; 2026. A ARTE DA FRAGRÂNCIA EM DECANTS.</p>
+            <p>OLIVA &copy; 2026. A ARTE DA FRAGRÂNCIA.</p>
         </footer>
     </body>
     </html>
@@ -126,13 +166,11 @@ TEMPLATES = {
     {% block content %}
     <div class="hero-section">
         <h2>A Essência da Exclusividade</h2>
-        <p>A sofisticação das maiores grifes do mundo, na volumetria perfeita para você.</p>
+        <p>A sofisticação das maiores grifes do mundo, na volumetria perfeita.</p>
     </div>
     <div class="products-grid">
         {% for produto in produtos %}
         <div class="product-card">
-            
-            <!-- Imagem puxando direto do Banco de Dados via Base64 -->
             {% if produto.imagem_base64 %}
                 <div class="product-img-real">
                     <img src="data:image/jpeg;base64,{{ produto.imagem_base64 }}" alt="{{ produto.nome }}">
@@ -150,12 +188,12 @@ TEMPLATES = {
                 <p class="description">{{ produto.descricao }}</p>
                 <p class="price">R$ {{ "%.2f"|format(produto.preco) }}</p>
                 <form action="{{ url_for('adicionar_carrinho', id_produto=produto.id) }}" method="POST">
-                    <button type="submit" class="btn-primary">Adicionar ao Carrinho</button>
+                    <button type="submit" class="btn-primary">Adicionar</button>
                 </form>
             </div>
         </div>
         {% else %}
-        <p style="text-align: center; width: 100%; color: #8c764d; font-style: italic;">Nosso catálogo está sendo atualizado com novas essências.</p>
+        <p style="text-align: center; width: 100%; color: #8c764d; font-style: italic;">Nosso catálogo está sendo atualizado.</p>
         {% endfor %}
     </div>
     {% endblock %}
@@ -164,28 +202,30 @@ TEMPLATES = {
     'carrinho.html': '''
     {% extends 'base.html' %}
     {% block content %}
-    <h2 class="page-title">Carrinho de Compras</h2>
+    <h2 class="page-title">Meu Carrinho</h2>
     {% if produtos %}
-        <table>
-            <tr><th>Fragrância</th><th>Volumetria</th><th>Quantidade</th><th>Subtotal</th></tr>
-            {% for p in produtos %}
-            <tr>
-                <td style="color: #2c2621; font-weight: 500;">{{ p.nome }}</td>
-                <td style="color: #8c764d;">{{ p.volume_ml }}ml</td>
-                <td>{{ p.quantidade }}</td>
-                <td style="font-family: 'Times New Roman', serif; font-size: 12pt;">R$ {{ "%.2f"|format(p.subtotal) }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-        <h3 style="text-align: right; margin-bottom: 30px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 18pt;">Total: R$ {{ "%.2f"|format(total) }}</h3>
-        <div style="text-align: right;">
-            <a href="/carrinho/limpar" style="color: #a39686; margin-right: 30px; text-decoration: none; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px;">Esvaziar Carrinho</a>
-            <button class="btn-primary" style="width: 250px;" onclick="alert('Pagamento em breve!')">Finalizar Pedido</button>
+        <div class="table-wrapper">
+            <table>
+                <tr><th>Fragrância</th><th>Vol (ml)</th><th>Qtd</th><th>Subtotal</th></tr>
+                {% for p in produtos %}
+                <tr>
+                    <td style="color: #2c2621; font-weight: 500;">{{ p.nome }}</td>
+                    <td style="color: #8c764d;">{{ p.volume_ml }}</td>
+                    <td>{{ p.quantidade }}</td>
+                    <td style="font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.subtotal) }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <h3 style="text-align: right; margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 16pt;">Total: R$ {{ "%.2f"|format(total) }}</h3>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 15px;">
+            <button class="btn-primary" style="max-width: 300px;" onclick="alert('Pagamento em breve!')">Finalizar Pedido</button>
+            <a href="/carrinho/limpar" style="color: #a39686; text-decoration: none; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px;">Esvaziar Carrinho</a>
         </div>
     {% else %}
-        <div style="text-align: center; padding: 80px 0;">
-            <p style="font-size: 12pt; color: #a39686; margin-bottom: 30px; font-style: italic;">Sua seleção está vazia.</p>
-            <a href="/" class="btn-primary" style="text-decoration: none; padding: 12px 30px; display: inline-block; width: auto;">Descobrir Fragrâncias</a>
+        <div style="text-align: center; padding: 60px 0;">
+            <p style="font-size: 12pt; color: #a39686; margin-bottom: 30px; font-style: italic;">Seu carrinho está vazio.</p>
+            <a href="/" class="btn-primary" style="text-decoration: none; display: inline-block; width: auto; padding: 15px 40px;">Ver Catálogo</a>
         </div>
     {% endif %}
     {% endblock %}
@@ -194,18 +234,18 @@ TEMPLATES = {
     'login.html': '''
     {% extends 'base.html' %}
     {% block content %}
-    <div style="max-width: 420px; margin: 40px auto 0; background: #fff; padding: 50px 40px; border: 1px solid #f2ecdf; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
-        <h2 style="text-align: center; margin-bottom: 40px; font-family: 'Times New Roman', serif; color: #2c2621; font-size: 20pt; letter-spacing: 1px;">Acesso Exclusivo</h2>
+    <div style="max-width: 400px; margin: 20px auto 0; background: #fff; padding: 40px 30px; border: 1px solid #f2ecdf; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
+        <h2 style="text-align: center; margin-bottom: 30px; font-family: 'Times New Roman', serif; color: #2c2621; font-size: 18pt; letter-spacing: 1px;">Acesso Restrito</h2>
         <form method="POST" action="/login">
             <div class="form-group">
-                <label>E-mail de Acesso</label>
+                <label>E-mail</label>
                 <input type="email" name="email" required>
             </div>
-            <div class="form-group" style="margin-bottom: 40px;">
+            <div class="form-group" style="margin-bottom: 30px;">
                 <label>Senha</label>
                 <input type="password" name="senha" required>
             </div>
-            <button type="submit" class="btn-primary">Entrar</button>
+            <button type="submit" class="btn-primary">Entrar no Sistema</button>
         </form>
     </div>
     {% endblock %}
@@ -235,164 +275,168 @@ TEMPLATES = {
     'estoque.html': '''
     {% extends 'base.html' %}
     {% block content %}
-    <h2 class="page-title">Gestão e Histórico de Estoque</h2>
+    <h2 class="page-title">Gestão de Estoque</h2>
     
-    <div style="display: flex; gap: 30px; margin-bottom: 50px; flex-wrap: wrap;">
+    <div style="display: flex; flex-direction: column; gap: 30px; margin-bottom: 50px;">
         
-        <!-- 1. CADASTRAR NOVO PRODUTO (Agora com Upload de Foto) -->
-        <div style="background: #fff; padding: 35px; border: 1px solid #f2ecdf; border-radius: 6px; flex: 1; min-width: 400px;">
-            <h3 style="margin-bottom: 25px; color: #2c2621; font-weight: normal; font-family: 'Times New Roman', serif; font-size: 16pt;">1. Cadastrar Nova Fragrância</h3>
-            <form method="POST" action="/admin/estoque" enctype="multipart/form-data" style="display: flex; flex-wrap: wrap; gap: 15px;">
+        <div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;">
+            <h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">1. Cadastrar Novo Decant</h3>
+            <form method="POST" action="/admin/estoque" enctype="multipart/form-data" class="form-row">
                 <input type="hidden" name="action" value="novo_produto">
                 
-                <div class="form-group" style="width: 100%; margin-bottom: 0;">
+                <div class="form-group col-100">
                     <label>Nome do Perfume</label>
                     <input type="text" name="nome" required>
                 </div>
                 
-                <div class="form-group" style="width: 47%; margin-bottom: 0;">
+                <div class="form-group col-50">
                     <label>Volumetria (ml)</label>
                     <input type="number" name="volume_ml" required>
                 </div>
-                <div class="form-group" style="width: 47%; margin-bottom: 0;">
+                <div class="form-group col-50">
                     <label>Estoque Inicial</label>
                     <input type="number" name="estoque" required value="0">
                 </div>
                 
-                <div class="form-group" style="width: 47%; margin-bottom: 0;">
+                <div class="form-group col-50">
                     <label>Custo Pago (R$)</label>
                     <input type="number" step="0.01" name="custo" required placeholder="0.00">
                 </div>
-                <div class="form-group" style="width: 47%; margin-bottom: 0;">
+                <div class="form-group col-50">
                     <label>Preço Venda (R$)</label>
                     <input type="number" step="0.01" name="preco" required placeholder="0.00">
                 </div>
                 
-                <div class="form-group" style="width: 100%; margin-bottom: 0;">
-                    <label>Foto do Produto (Upload)</label>
+                <div class="form-group col-100">
+                    <label>Foto do Produto (Câmera ou Galeria)</label>
                     <input type="file" name="imagem" accept="image/*">
                 </div>
 
-                <div class="form-group" style="width: 100%; margin-bottom: 15px;">
+                <div class="form-group col-100">
                     <label>Descrição Olfativa</label>
                     <textarea name="descricao" rows="2"></textarea>
                 </div>
-                <button type="submit" class="btn-primary">Criar Cadastro</button>
+                <div class="col-100">
+                    <button type="submit" class="btn-primary">Criar Cadastro</button>
+                </div>
             </form>
         </div>
 
-        <!-- 2. REPOSIÇÃO DE ESTOQUE (COMPRAS) -->
-        <div style="background: #fff; padding: 35px; border: 1px solid #f2ecdf; border-radius: 6px; flex: 1; min-width: 400px;">
-            <h3 style="margin-bottom: 25px; color: #2c2621; font-weight: normal; font-family: 'Times New Roman', serif; font-size: 16pt;">2. Registrar Compra (Reposição)</h3>
-            <form method="POST" action="/admin/estoque" style="display: flex; flex-wrap: wrap; gap: 15px;">
+        <div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;">
+            <h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">2. Registrar Reposição</h3>
+            <form method="POST" action="/admin/estoque" class="form-row">
                 <input type="hidden" name="action" value="nova_entrada">
                 
-                <div class="form-group" style="width: 100%; margin-bottom: 0;">
+                <div class="form-group col-100">
                     <label>Selecione a Fragrância</label>
                     <select name="produto_id" required>
-                        <option value="">-- Escolha o Decant --</option>
+                        <option value="">-- Escolha --</option>
                         {% for p in produtos %}
                             <option value="{{ p.id }}">{{ p.nome }} ({{ p.volume_ml }}ml)</option>
                         {% endfor %}
                     </select>
                 </div>
                 
-                <div class="form-group" style="width: 100%; margin-bottom: 0;">
+                <div class="form-group col-100">
                     <label>Data da Compra</label>
                     <input type="date" name="data_compra" required value="{{ data_hoje }}">
                 </div>
 
-                <div class="form-group" style="width: 47%; margin-bottom: 0;">
+                <div class="form-group col-50">
                     <label>Qtd Comprada</label>
                     <input type="number" name="quantidade" required min="1">
                 </div>
-                <div class="form-group" style="width: 47%; margin-bottom: 15px;">
+                <div class="form-group col-50">
                     <label>Custo Unitário Pago (R$)</label>
                     <input type="number" step="0.01" name="custo" required>
                 </div>
 
-                <button type="submit" class="btn-primary" style="background-color: #2c2621; color: #b89758; margin-top: auto;">Gravar Estoque</button>
+                <div class="col-100">
+                    <button type="submit" class="btn-primary" style="background-color: #2c2621; color: #b89758;">Gravar Estoque</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <h3 style="margin-bottom: 20px; color: #2c2621; font-weight: normal; font-family: 'Times New Roman', serif; font-size: 16pt;">Catálogo Atual & Edição</h3>
-    <table style="margin-bottom: 50px;">
-        <tr><th>Ref</th><th>Foto</th><th>Fragrância</th><th>Custo</th><th>Venda</th><th>Estoque</th><th>Ação</th></tr>
-        {% for p in produtos %}
-        <tr>
-            <td style="color: #a39686;">#{{ p.id }}</td>
-            <td>
-                {% if p.imagem_base64 %}
-                    <img src="data:image/jpeg;base64,{{ p.imagem_base64 }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #eae1d3;">
-                {% else %}
-                    <div style="width: 40px; height: 40px; background: #fcfaf7; border: 1px solid #eae1d3; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #b89758;">✧</div>
-                {% endif %}
-            </td>
-            <td style="color: #2c2621; font-weight: 500;">{{ p.nome }} <span style="color: #8c764d; font-size: 9pt;">({{ p.volume_ml }}ml)</span></td>
-            <td style="color: #666; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.custo) if p.custo else "0.00" }}</td>
-            <td style="font-family: 'Times New Roman', serif; color: #2c2621; font-weight: bold;">R$ {{ "%.2f"|format(p.preco) }}</td>
-            <td>
-                <span style="padding: 6px 12px; background: {% if p.estoque < 5 %}#fffcf7{% else %}transparent{% endif %}; border: 1px solid {% if p.estoque < 5 %}#b89758{% else %}#eae1d3{% endif %}; border-radius: 4px; font-size: 9pt; color: #665b4f;">
-                    {{ p.estoque }} un
-                </span>
-            </td>
-            <td>
-                <a href="/admin/produto/editar/{{ p.id }}" style="color: #b89758; text-decoration: none; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">Editar</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+    <h3 style="margin-bottom: 15px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">Catálogo Atual & Edição</h3>
+    <div class="table-wrapper">
+        <table>
+            <tr><th>Foto</th><th>Fragrância</th><th>Custo</th><th>Venda</th><th>Estoque</th><th>Ação</th></tr>
+            {% for p in produtos %}
+            <tr>
+                <td>
+                    {% if p.imagem_base64 %}
+                        <img src="data:image/jpeg;base64,{{ p.imagem_base64 }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #eae1d3;">
+                    {% else %}
+                        <div style="width: 40px; height: 40px; background: #fcfaf7; border: 1px solid #eae1d3; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #b89758;">✧</div>
+                    {% endif %}
+                </td>
+                <td style="color: #2c2621; font-weight: 500; white-space: normal; min-width: 150px;">{{ p.nome }} <span style="color: #8c764d; font-size: 9pt;">({{ p.volume_ml }}ml)</span></td>
+                <td style="color: #666; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.custo) if p.custo else "0.00" }}</td>
+                <td style="font-family: 'Times New Roman', serif; color: #2c2621; font-weight: bold;">R$ {{ "%.2f"|format(p.preco) }}</td>
+                <td>
+                    <span style="padding: 4px 10px; background: {% if p.estoque < 5 %}#fffcf7{% else %}transparent{% endif %}; border: 1px solid {% if p.estoque < 5 %}#b89758{% else %}#eae1d3{% endif %}; border-radius: 4px; font-size: 9pt; color: #665b4f;">
+                        {{ p.estoque }} un
+                    </span>
+                </td>
+                <td>
+                    <a href="/admin/produto/editar/{{ p.id }}" style="color: #b89758; text-decoration: none; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">Editar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 
-    <h3 style="margin-bottom: 20px; color: #2c2621; font-weight: normal; font-family: 'Times New Roman', serif; font-size: 16pt;">Histórico de Compras (Entradas)</h3>
-    <table>
-        <tr><th>Data</th><th>Fragrância</th><th>Qtd</th><th>Custo Un.</th><th>Total Pago</th></tr>
-        {% for entrada in entradas %}
-        <tr>
-            <td style="color: #a39686;">{{ entrada.data_formatada }}</td>
-            <td style="color: #2c2621; font-weight: 500;">{{ entrada.nome }}</td>
-            <td><span style="padding: 4px 8px; background: #eefaf2; color: #3c763d; border-radius: 4px; font-weight: bold; font-size: 9pt;">+{{ entrada.quantidade }}</span></td>
-            <td style="font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(entrada.custo_unitario) }}</td>
-            <td style="font-family: 'Times New Roman', serif; color: #8c764d; font-weight: bold;">R$ {{ "%.2f"|format(entrada.quantidade * entrada.custo_unitario) }}</td>
-        </tr>
-        {% else %}
-        <tr><td colspan="5" style="text-align: center; color: #a39686; font-style: italic;">Nenhuma compra registrada no histórico.</td></tr>
-        {% endfor %}
-    </table>
+    <h3 style="margin-bottom: 15px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">Histórico de Compras (Entradas)</h3>
+    <div class="table-wrapper">
+        <table>
+            <tr><th>Data</th><th>Fragrância</th><th>Qtd</th><th>Custo Un.</th><th>Total Pago</th></tr>
+            {% for entrada in entradas %}
+            <tr>
+                <td style="color: #a39686;">{{ entrada.data_formatada }}</td>
+                <td style="color: #2c2621; font-weight: 500; white-space: normal; min-width: 150px;">{{ entrada.nome }}</td>
+                <td><span style="padding: 4px 8px; background: #eefaf2; color: #3c763d; border-radius: 4px; font-weight: bold; font-size: 9pt;">+{{ entrada.quantidade }}</span></td>
+                <td style="font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(entrada.custo_unitario) }}</td>
+                <td style="font-family: 'Times New Roman', serif; color: #8c764d; font-weight: bold;">R$ {{ "%.2f"|format(entrada.quantidade * entrada.custo_unitario) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" style="text-align: center; color: #a39686; font-style: italic;">Nenhuma compra registrada.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
     {% endblock %}
     ''',
     
     'editar_produto.html': '''
     {% extends 'base.html' %}
     {% block content %}
-    <h2 class="page-title">Editar Fragrância: {{ p.nome }}</h2>
+    <h2 class="page-title">Editar Fragrância</h2>
     
-    <div style="background: #fff; padding: 40px; border: 1px solid #f2ecdf; border-radius: 6px; max-width: 800px; margin: 0 auto; margin-bottom: 50px;">
-        <form method="POST" action="/admin/produto/editar/{{ p.id }}" enctype="multipart/form-data" style="display: flex; flex-wrap: wrap; gap: 20px;">
+    <div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px; margin-bottom: 30px;">
+        <form method="POST" action="/admin/produto/editar/{{ p.id }}" enctype="multipart/form-data" class="form-row">
             
-            <div class="form-group" style="width: 100%; margin-bottom: 0;">
+            <div class="form-group col-100">
                 <label>Nome do Perfume</label>
                 <input type="text" name="nome" required value="{{ p.nome }}">
             </div>
             
-            <div class="form-group" style="width: 47%; margin-bottom: 0;">
+            <div class="form-group col-50">
                 <label>Volumetria (ml)</label>
                 <input type="number" name="volume_ml" required value="{{ p.volume_ml }}">
             </div>
-            <div class="form-group" style="width: 47%; margin-bottom: 0;">
+            <div class="form-group col-50">
                 <label>Custo Base Atual (R$)</label>
                 <input type="number" step="0.01" name="custo" required value="{{ p.custo }}">
             </div>
             
-            <div class="form-group" style="width: 47%; margin-bottom: 0;">
+            <div class="form-group col-100">
                 <label>Preço Venda (R$)</label>
                 <input type="number" step="0.01" name="preco" required value="{{ p.preco }}">
             </div>
             
-            <div class="form-group" style="width: 100%; margin-bottom: 0;">
-                <label>Atualizar Foto do Produto</label>
+            <div class="form-group col-100">
+                <label>Nova Foto (Câmera ou Galeria)</label>
                 <input type="file" name="imagem" accept="image/*">
-                <p style="font-size: 8.5pt; color: #a39686; margin-top: 5px;">* Deixe em branco se não quiser alterar a foto atual.</p>
                 {% if p.imagem_base64 %}
                     <div style="margin-top: 15px; border: 1px solid #eae1d3; padding: 5px; display: inline-block; border-radius: 4px; background: #fffcf7;">
                         <img src="data:image/jpeg;base64,{{ p.imagem_base64 }}" alt="Preview" style="height: 80px; border-radius: 2px;">
@@ -400,14 +444,14 @@ TEMPLATES = {
                 {% endif %}
             </div>
 
-            <div class="form-group" style="width: 100%; margin-bottom: 10px;">
+            <div class="form-group col-100">
                 <label>Descrição Olfativa</label>
                 <textarea name="descricao" rows="4">{{ p.descricao }}</textarea>
             </div>
             
-            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f2ecdf; padding-top: 25px; margin-top: 10px;">
+            <div class="col-100" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                <button type="submit" class="btn-primary">Salvar Alterações</button>
                 <a href="/admin/estoque" class="btn-secondary">Voltar sem Salvar</a>
-                <button type="submit" class="btn-primary" style="width: auto; padding: 14px 50px;">Salvar Alterações</button>
             </div>
         </form>
     </div>
@@ -419,20 +463,22 @@ TEMPLATES = {
     {% block content %}
     <h2 class="page-title">Rentabilidade & Comissões</h2>
     <div class="alert" style="border-left-color: #2c2621; background-color: #fff;">
-        <span style="color: #2c2621; font-weight: bold;">Análise de Lucro:</span> A tabela detalha a margem bruta (Preço de Venda menos Custo Pago) e calcula a comissão padrão de <strong>10%</strong> sobre a venda final.
+        <span style="color: #2c2621; font-weight: bold;">Análise de Lucro (10%)</span>
     </div>
-    <table>
-        <tr><th>Fragrância</th><th>Custo Pago</th><th>Preço Venda</th><th>Lucro Bruto</th><th>Comissão (10% Venda)</th></tr>
-        {% for p in produtos %}
-        <tr>
-            <td style="color: #2c2621;">{{ p.nome }} <span style="color: #8c764d; font-size: 9pt;">({{ p.volume_ml }}ml)</span></td>
-            <td style="color: #d9534f; font-family: 'Times New Roman', serif;">- R$ {{ "%.2f"|format(p.custo) if p.custo else "0.00" }}</td>
-            <td style="color: #2c2621; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.preco) }}</td>
-            <td style="color: #3c763d; font-family: 'Times New Roman', serif; font-weight: bold;">R$ {{ "%.2f"|format(p.preco - (p.custo or 0)) }}</td>
-            <td style="color: #b89758; font-family: 'Times New Roman', serif; font-size: 12pt; font-weight: bold;">R$ {{ "%.2f"|format(p.preco * 0.10) }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <div class="table-wrapper">
+        <table>
+            <tr><th>Fragrância</th><th>Custo Pago</th><th>Venda</th><th>Lucro</th><th>Comissão (10%)</th></tr>
+            {% for p in produtos %}
+            <tr>
+                <td style="color: #2c2621; white-space: normal; min-width: 150px;">{{ p.nome }} <span style="color: #8c764d; font-size: 9pt;">({{ p.volume_ml }}ml)</span></td>
+                <td style="color: #d9534f; font-family: 'Times New Roman', serif;">- R$ {{ "%.2f"|format(p.custo) if p.custo else "0.00" }}</td>
+                <td style="color: #2c2621; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(p.preco) }}</td>
+                <td style="color: #3c763d; font-family: 'Times New Roman', serif; font-weight: bold;">R$ {{ "%.2f"|format(p.preco - (p.custo or 0)) }}</td>
+                <td style="color: #b89758; font-family: 'Times New Roman', serif; font-weight: bold;">R$ {{ "%.2f"|format(p.preco * 0.10) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
     {% endblock %}
     ''',
 
@@ -442,7 +488,7 @@ TEMPLATES = {
     <h2 class="page-title">Minha Coleção</h2>
     <div style="background: #fff; padding: 60px 20px; text-align: center; border: 1px solid #f2ecdf; border-radius: 6px;">
         <p style="color: #a39686; font-size: 11pt; margin-bottom: 30px; font-style: italic;">Sua jornada olfativa ainda não começou.</p>
-        <a href="/" class="btn-primary" style="text-decoration: none; padding: 12px 30px; display: inline-block; width: auto;">Explorar o Catálogo</a>
+        <a href="/" class="btn-primary" style="text-decoration: none; padding: 15px 40px; display: inline-block; width: auto;">Explorar o Catálogo</a>
     </div>
     {% endblock %}
     '''
@@ -484,7 +530,6 @@ def init_db():
         );
     ''')
     
-    # Adiciona colunas para Custo e Imagem Base64 de forma segura
     cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='produtos' AND column_name='custo';")
     if not cur.fetchone():
         cur.execute("ALTER TABLE produtos ADD COLUMN custo NUMERIC(10,2) DEFAULT 0;")
@@ -517,7 +562,7 @@ def init_db():
 
 try:
     init_db()
-    print("Banco blindado para Produção! Fotos em Base64 ativadas.")
+    print("Banco blindado para Mobile! Fotos em Base64 ativadas.")
 except Exception as e:
     print(f"Aguardando banco... {e}")
 
@@ -634,7 +679,7 @@ def meus_pedidos():
 
 
 # ==========================================
-# 5. ROTAS GERENCIAIS (ESTOQUE, UPLOAD E EDIÇÃO)
+# 5. ROTAS GERENCIAIS
 # ==========================================
 
 @app.route('/admin/dashboard')
@@ -667,7 +712,6 @@ def admin_estoque():
             estoque_inicial = int(request.form['estoque'])
             descricao = request.form.get('descricao', '')
             
-            # Tratamento da Imagem enviada
             imagem_file = request.files.get('imagem')
             imagem_b64 = None
             if imagem_file and imagem_file.filename != '':
@@ -704,7 +748,7 @@ def admin_estoque():
                 WHERE id = %s;
             ''', (quantidade, custo, produto_id))
             
-            flash('Compra computada e estoque atualizado com sucesso!', 'success')
+            flash('Reposição registrada com sucesso!', 'success')
 
         conn.commit()
         return redirect(url_for('admin_estoque'))
@@ -739,7 +783,6 @@ def admin_editar_produto(id):
         custo = request.form['custo']
         descricao = request.form.get('descricao', '')
         
-        # Tratamento da Imagem enviada na Edição
         imagem_file = request.files.get('imagem')
         
         if imagem_file and imagem_file.filename != '':
@@ -750,7 +793,6 @@ def admin_editar_produto(id):
                 WHERE id=%s
             ''', (nome, volume_ml, preco, custo, descricao, imagem_b64, id))
         else:
-            # Atualiza tudo, exceto a imagem (mantém a que já está lá)
             cur.execute('''
                 UPDATE produtos 
                 SET nome=%s, volume_ml=%s, preco=%s, custo=%s, descricao=%s
