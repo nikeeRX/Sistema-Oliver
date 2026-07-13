@@ -113,7 +113,7 @@ TEMPLATES = {
                         {% if session.get('tipo') == 'admin' %}
                             <a href="/admin/dashboard">Painel</a>
                             <a href="/admin/estoque">Estoque</a>
-                            <a href="/admin/comissao">Comissões</a>
+                            <a href="/admin/comissao">Vendas & Pedidos</a>
                             <a href="/admin/usuarios">Usuários</a>
                             <a href="/admin/configuracoes">⚙️ API</a>
                         {% elif session.get('tipo') == 'vendedor' %}
@@ -378,34 +378,43 @@ TEMPLATES = {
     {% block content %}
     <h2 class="page-title">Gestão de Vendas & Comissões</h2>
     <div class="alert alert-info">
-        Aqui você gerencia todos os pedidos finalizados com sucesso e controla os pagamentos de comissões (10%) para os revendedores.
+        Aqui você gerencia todos os pedidos realizados. É por aqui que você sabe o que separar no estoque e qual comissão pagar.
     </div>
     <div class="table-wrapper">
         <table>
-            <tr><th>Data</th><th>Vendedor(a)</th><th>Cliente Comprador</th><th>Valor do Pedido</th><th>Comissão (10%)</th><th>Status Comissão</th></tr>
+            <tr><th>Data / Pedido</th><th>Itens Vendidos</th><th>Vendedor(a)</th><th>Cliente</th><th>Total</th><th>Comissão (10%)</th><th>Status Pago</th></tr>
             {% for v in vendas %}
             <tr>
-                <td style="color: #a39686; font-size: 9pt;">{{ v.data_formatada }}</td>
-                <td style="color: #2c2621; font-weight: bold;">{{ v.vendedor_nome or 'Venda Direta (Sem Vendedor)' }}</td>
+                <td style="color: #a39686; font-size: 9pt;">{{ v.data_formatada }}<br><span style="color:#2c2621; font-weight:bold; font-size: 11pt;">#{{ v.id }}</span></td>
+                <td style="color: #666; font-size: 9pt; line-height: 1.5;">
+                    {% for item in v.itens %}
+                        <strong>{{ item.quantidade }}x</strong> {{ item.nome }} ({{ item.volume_ml }}ml)<br>
+                    {% endfor %}
+                </td>
+                <td style="color: #2c2621; font-weight: bold;">{{ v.vendedor_nome or 'Venda Direta (S/ Ref)' }}</td>
                 <td style="color: #666;">{{ v.cliente_nome }}</td>
                 <td style="font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(v.valor_total) }}</td>
                 <td style="color: #b89758; font-weight: bold; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(v.comissao_total) }}</td>
                 <td>
-                    {% if v.vendedor_nome %}
-                        {% if v.status_comissao == 'paga' %}
-                            <span class="badge badge-green">Paga</span>
-                        {% else %}
-                            <form action="/admin/comissao/pagar/{{ v.id }}" method="POST" style="display:inline;">
-                                <button type="submit" class="btn-primary" style="padding: 6px 12px; font-size: 8pt; width: auto; background-color: #d9534f;">Marcar Paga</button>
-                            </form>
-                        {% endif %}
+                    {% if v.status_pagamento != 'aprovado' %}
+                        <span class="badge badge-yellow">Aguardando Pagamento</span>
                     {% else %}
-                        <span style="color: #ccc; font-style: italic;">Não se aplica</span>
+                        {% if v.vendedor_nome %}
+                            {% if v.status_comissao == 'paga' %}
+                                <span class="badge badge-green">Comissão Paga</span>
+                            {% else %}
+                                <form action="/admin/comissao/pagar/{{ v.id }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn-primary" style="padding: 6px 12px; font-size: 8pt; width: auto; background-color: #d9534f;">Marcar Paga</button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge badge-green">100% da Loja</span>
+                        {% endif %}
                     {% endif %}
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="6" style="text-align: center; padding: 30px; color: #a39686;">Nenhuma venda faturada ainda.</td></tr>
+            <tr><td colspan="7" style="text-align: center; padding: 30px; color: #a39686;">Nenhuma venda registrada ainda.</td></tr>
             {% endfor %}
         </table>
     </div>
@@ -419,7 +428,7 @@ TEMPLATES = {
     
     <div style="background: #fdfbf7; border: 2px dashed #b89758; padding: 25px; border-radius: 6px; text-align: center; margin-bottom: 40px;">
         <h3 style="color: #2c2621; margin-bottom: 10px;">Seu Link Exclusivo de Vendas</h3>
-        <p style="color: #666; font-size: 10pt; margin-bottom: 15px;">Copie o link abaixo e envie para seus clientes no WhatsApp ou Instagram. Toda compra gerada por ele vai direto para sua conta!</p>
+        <p style="color: #666; font-size: 10pt; margin-bottom: 15px;">Copie o link abaixo e envie para seus clientes. Toda compra gerada por ele vai direto para sua conta!</p>
         <input type="text" readonly value="{{ host_url }}/?ref={{ session.usuario_id }}" style="text-align: center; font-weight: bold; color: #b89758; background: #fff; max-width: 500px; margin: 0 auto; display: block;">
     </div>
 
@@ -441,10 +450,15 @@ TEMPLATES = {
     <h3 style="margin-bottom: 15px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 16pt;">Extrato de Pedidos dos Seus Clientes</h3>
     <div class="table-wrapper">
         <table>
-            <tr><th>Data</th><th>Cliente</th><th>Valor Vendido</th><th>Sua Comissão</th><th>Status Repasse</th></tr>
+            <tr><th>Data / Pedido</th><th>Itens Comprados</th><th>Cliente</th><th>Valor Vendido</th><th>Sua Comissão</th><th>Status Repasse</th></tr>
             {% for v in vendas %}
             <tr>
-                <td style="color: #a39686; font-size: 9pt;">{{ v.data_formatada }}</td>
+                <td style="color: #a39686; font-size: 9pt;">{{ v.data_formatada }}<br><span style="color:#2c2621; font-weight:bold; font-size:11pt;">#{{ v.id }}</span></td>
+                <td style="color: #666; font-size: 9pt; line-height: 1.5;">
+                    {% for item in v.itens %}
+                        <strong>{{ item.quantidade }}x</strong> {{ item.nome }} ({{ item.volume_ml }}ml)<br>
+                    {% endfor %}
+                </td>
                 <td style="color: #2c2621; font-weight: 500;">{{ v.cliente_nome }}</td>
                 <td style="font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(v.valor_total) }}</td>
                 <td style="color: #b89758; font-weight: bold; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(v.comissao_total) }}</td>
@@ -457,7 +471,7 @@ TEMPLATES = {
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="5" style="text-align: center; color: #a39686; font-style: italic; padding: 20px;">Você ainda não realizou vendas através do seu link.</td></tr>
+            <tr><td colspan="6" style="text-align: center; color: #a39686; font-style: italic; padding: 20px;">Você ainda não realizou vendas faturadas.</td></tr>
             {% endfor %}
         </table>
     </div>
@@ -471,10 +485,15 @@ TEMPLATES = {
     {% if pedidos %}
         <div class="table-wrapper">
             <table>
-                <tr><th>Número do Pedido</th><th>Data da Compra</th><th>Valor Total</th><th>Status do Pagamento</th></tr>
+                <tr><th>Pedido</th><th>Itens Comprados</th><th>Data da Compra</th><th>Valor Total</th><th>Status do Pagamento</th></tr>
                 {% for p in pedidos %}
                 <tr>
                     <td style="color: #2c2621; font-weight: 500; font-size: 11pt;">#{{ p.id }}</td>
+                    <td style="color: #666; font-size: 9pt; line-height: 1.5;">
+                        {% for item in p.itens %}
+                            <strong>{{ item.quantidade }}x</strong> {{ item.nome }} ({{ item.volume_ml }}ml)<br>
+                        {% endfor %}
+                    </td>
                     <td style="color: #666;">{{ p.data_formatada }}</td>
                     <td style="font-family: 'Times New Roman', serif; font-size: 12pt;">R$ {{ "%.2f"|format(p.valor_total) }}</td>
                     <td>
@@ -741,7 +760,6 @@ def checkout():
         
     conn.commit()
     
-    # Tratamento para garantir HTTPS no retorno do Mercado Pago (Segurança obrigatória do MP)
     host_url = request.url_root.rstrip('/')
     if host_url.startswith('http://') and 'localhost' not in host_url and '127.0.0.1' not in host_url:
         host_url = host_url.replace('http://', 'https://')
@@ -776,7 +794,6 @@ def checkout():
             cur.close(); conn.close()
             return redirect(init_point)
         else:
-            # Caso o Mercado Pago rejeite, vamos saber o exato motivo!
             erro_mp = response.json().get('message', 'Configuração de Token ou URL inválida.')
             cur.close(); conn.close()
             flash(f'Falha na integração MP: {erro_mp}', 'error')
@@ -896,7 +913,19 @@ def meus_pedidos():
         SELECT id, valor_total, status_pagamento, mp_preference_id, TO_CHAR(data_pedido, 'DD/MM/YYYY HH24:MI') as data_formatada 
         FROM pedidos WHERE cliente_id = %s ORDER BY id DESC;
     ''', (session['usuario_id'],))
-    pedidos = cur.fetchall()
+    pedidos_raw = cur.fetchall()
+    
+    pedidos = []
+    for p in pedidos_raw:
+        cur.execute('''
+            SELECT ip.quantidade, COALESCE(pr.nome, 'Produto Excluído') as nome, COALESCE(pr.volume_ml, 0) as volume_ml
+            FROM itens_pedido ip
+            LEFT JOIN produtos pr ON ip.produto_id = pr.id
+            WHERE ip.pedido_id = %s
+        ''', (p['id'],))
+        p['itens'] = cur.fetchall()
+        pedidos.append(p)
+        
     cur.close(); conn.close()
     return render_template('pedidos_cliente.html', pedidos=pedidos)
 
@@ -922,7 +951,19 @@ def vendedor_painel():
         FROM pedidos p JOIN usuarios u ON p.cliente_id = u.id
         WHERE p.vendedor_id = %s AND p.status_pagamento = 'aprovado' ORDER BY p.id DESC;
     ''', (session['usuario_id'],))
-    vendas = cur.fetchall()
+    vendas_raw = cur.fetchall()
+    
+    vendas = []
+    for v in vendas_raw:
+        cur.execute('''
+            SELECT ip.quantidade, COALESCE(pr.nome, 'Produto Excluído') as nome, COALESCE(pr.volume_ml, 0) as volume_ml
+            FROM itens_pedido ip
+            LEFT JOIN produtos pr ON ip.produto_id = pr.id
+            WHERE ip.pedido_id = %s
+        ''', (v['id'],))
+        v['itens'] = cur.fetchall()
+        vendas.append(v)
+        
     cur.close(); conn.close()
     
     host_url = request.url_root.rstrip('/')
@@ -1007,14 +1048,26 @@ def admin_comissoes_gerais():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute('''
-        SELECT p.id, p.valor_total, p.comissao_total, p.status_comissao, TO_CHAR(p.data_pedido, 'DD/MM/YYYY') as data_formatada, 
+        SELECT p.id, p.valor_total, p.comissao_total, p.status_comissao, p.status_pagamento, TO_CHAR(p.data_pedido, 'DD/MM/YYYY') as data_formatada, 
                u1.nome as cliente_nome, u2.nome as vendedor_nome
         FROM pedidos p 
         LEFT JOIN usuarios u1 ON p.cliente_id = u1.id
         LEFT JOIN usuarios u2 ON p.vendedor_id = u2.id
-        WHERE p.status_pagamento = 'aprovado' ORDER BY p.id DESC;
+        ORDER BY p.id DESC;
     ''')
-    vendas = cur.fetchall()
+    vendas_raw = cur.fetchall()
+    
+    vendas = []
+    for v in vendas_raw:
+        cur.execute('''
+            SELECT ip.quantidade, COALESCE(pr.nome, 'Produto Excluído') as nome, COALESCE(pr.volume_ml, 0) as volume_ml
+            FROM itens_pedido ip
+            LEFT JOIN produtos pr ON ip.produto_id = pr.id
+            WHERE ip.pedido_id = %s
+        ''', (v['id'],))
+        v['itens'] = cur.fetchall()
+        vendas.append(v)
+        
     cur.close(); conn.close()
     return render_template('admin_comissao.html', vendas=vendas)
 
