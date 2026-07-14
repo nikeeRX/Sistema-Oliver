@@ -296,7 +296,6 @@ TEMPLATES = {
     {% block content %}
     <h2 class="page-title">Gestão de Usuários</h2>
     
-    <!-- Formulário de Criação VIP -->
     <div style="background: #fdfbf7; padding: 30px; border: 1px solid #eae1d3; border-radius: 6px; margin-bottom: 40px;">
         <h3 style="margin-bottom: 15px; color: #2c2621; font-family: 'Times New Roman', serif;">Adicionar Novo Usuário (Admin/Vendedor/Cliente)</h3>
         <form method="POST" action="/admin/usuario/criar" class="form-row">
@@ -317,7 +316,6 @@ TEMPLATES = {
         </form>
     </div>
 
-    <!-- Lista de Usuários -->
     <div class="table-wrapper">
         <table>
             <tr><th>ID</th><th>Nome / Contato</th><th>Tipo</th><th>Status</th><th>Ação</th></tr>
@@ -405,7 +403,7 @@ TEMPLATES = {
     {% block content %}
     <h2 class="page-title">Controle de Vendas & Logística</h2>
     <div class="alert alert-info">
-        Aqui você gerencia todos os pedidos, atualiza o envio para o cliente e repassa as comissões.
+        Aqui você gerencia todos os pedidos realizados. É por aqui que você sabe o que separar no estoque e qual comissão pagar.
     </div>
     <div class="table-wrapper">
         <table>
@@ -424,8 +422,6 @@ TEMPLATES = {
                     <span style="font-family: 'Times New Roman', serif; font-size: 10pt;">Venda: R$ {{ "%.2f"|format(v.valor_total) }}</span><br>
                     <span style="color: #b89758; font-weight: bold; font-family: 'Times New Roman', serif; font-size: 10pt;">Comissão: R$ {{ "%.2f"|format(v.comissao_total) }}</span>
                 </td>
-                
-                <!-- Controle de Logística -->
                 <td style="background-color: #fdfbf7;">
                     {% if v.status_pagamento == 'aprovado' %}
                         <form action="/pedido/entrega/{{ v.id }}" method="POST" style="margin: 0;">
@@ -439,8 +435,6 @@ TEMPLATES = {
                         <span class="badge badge-gray" style="font-size: 8pt;">Aguardando Pagamento</span>
                     {% endif %}
                 </td>
-
-                <!-- Controle de Pagamento de Comissão -->
                 <td>
                     {% if v.status_pagamento != 'aprovado' %}
                         <span class="badge badge-yellow">Aguard. Pagamento</span>
@@ -496,7 +490,7 @@ TEMPLATES = {
     <h3 style="margin-bottom: 15px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 16pt;">Extrato de Vendas & Entregas</h3>
     <div class="table-wrapper">
         <table>
-            <tr><th>Pedido</th><th>Itens Comprados</th><th>Cliente</th><th>Valores</th><th>Status Entrega (Cliente)</th><th>Status Comissão</th></tr>
+            <tr><th>Data / Pedido</th><th>Itens Comprados</th><th>Cliente</th><th>Valores</th><th>Status Entrega (Cliente)</th><th>Status Comissão</th></tr>
             {% for v in vendas %}
             <tr>
                 <td style="color: #a39686; font-size: 9pt;">{{ v.data_formatada }}<br><span style="color:#2c2621; font-weight:bold; font-size:11pt;">#{{ v.id }}</span></td>
@@ -510,8 +504,6 @@ TEMPLATES = {
                     <span style="font-family: 'Times New Roman', serif; font-size: 9pt;">Venda: R$ {{ "%.2f"|format(v.valor_total) }}</span><br>
                     <span style="color: #b89758; font-weight: bold; font-family: 'Times New Roman', serif; font-size: 10pt;">Comissão: R$ {{ "%.2f"|format(v.comissao_total) }}</span>
                 </td>
-                
-                <!-- Vendedor também pode atualizar a entrega das próprias vendas -->
                 <td style="background-color: #fdfbf7;">
                     <form action="/pedido/entrega/{{ v.id }}" method="POST" style="margin: 0;">
                         <select name="status_entrega" onchange="this.form.submit()" style="padding: 6px; font-size: 8.5pt; width: 140px;">
@@ -521,7 +513,6 @@ TEMPLATES = {
                         </select>
                     </form>
                 </td>
-
                 <td>
                     {% if v.status_comissao == 'paga' %}
                         <span class="badge badge-green">Paga pela Loja</span>
@@ -556,8 +547,6 @@ TEMPLATES = {
                     </td>
                     <td style="color: #666;">{{ p.data_formatada }}</td>
                     <td style="font-family: 'Times New Roman', serif; font-size: 12pt;">R$ {{ "%.2f"|format(p.valor_total) }}</td>
-                    
-                    <!-- Exibe a logística para o cliente -->
                     <td style="background-color: #fdfbf7;">
                         {% if p.status_pagamento == 'aprovado' %}
                             {% if p.status_entrega == 'Enviado' %}
@@ -571,12 +560,11 @@ TEMPLATES = {
                             <span style="color: #ccc; font-size: 9pt;">Aguardando Pgto</span>
                         {% endif %}
                     </td>
-
                     <td>
                         {% if p.status_pagamento == 'aprovado' %}
                             <span class="badge badge-green">Pagamento Aprovado</span>
                         {% elif p.status_pagamento == 'in_process' or p.status_pagamento == 'em_analise' %}
-                            <span class="badge badge-yellow" style="background: #eef8ff; color: #31708f; border-color: #bce8f1;">Em Análise</span>
+                            <span class="badge badge-yellow" style="background: #eef8ff; color: #31708f; border-color: #bce8f1;">Em Análise pelo Banco</span>
                         {% else %}
                             <div style="display: flex; align-items: center; gap: 15px;">
                                 <span class="badge badge-yellow">Aguardando Pgto</span>
@@ -607,7 +595,6 @@ TEMPLATES = {
     <h2 class="page-title">Gestão de Estoque</h2>
     <div style="display: flex; flex-direction: column; gap: 30px; margin-bottom: 50px;">
         
-        <!-- 1. CADASTRAR NOVO PRODUTO -->
         <div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;">
             <h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">1. Cadastrar Novo Decant</h3>
             <form method="POST" action="/admin/estoque" enctype="multipart/form-data" class="form-row">
@@ -623,7 +610,6 @@ TEMPLATES = {
             </form>
         </div>
 
-        <!-- 2. REPOSIÇÃO DE ESTOQUE -->
         <div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;">
             <h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">2. Registrar Reposição</h3>
             <form method="POST" action="/admin/estoque" class="form-row">
@@ -694,9 +680,13 @@ TEMPLATES = {
                 <label>Custo Base Atual (R$)</label>
                 <input type="number" step="0.01" name="custo" required value="{{ p.custo if p.custo is not none else '0.00' }}">
             </div>
-            <div class="form-group col-100">
+            <div class="form-group col-50">
                 <label>Preço Venda (R$)</label>
                 <input type="number" step="0.01" name="preco" required value="{{ p.preco if p.preco is not none else '0.00' }}">
+            </div>
+            <div class="form-group col-50">
+                <label>Estoque Atual (Unidades)</label>
+                <input type="number" name="estoque" required value="{{ p.estoque if p.estoque is not none else 0 }}">
             </div>
             <div class="form-group col-100">
                 <label>Nova Foto (Deixe em branco para manter a atual)</label>
@@ -821,7 +811,6 @@ def init_db():
         );
     ''')
     
-    # Bloco Seguro: Cria a coluna status_entrega se ela não existir (Garante que não quebra em bancos antigos)
     try:
         cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='pedidos' AND column_name='status_entrega';")
         if not cur.fetchone():
@@ -856,7 +845,6 @@ def init_db():
 
 try:
     init_db()
-    print("Banco atualizado com Status de Entrega Logístico!")
 except Exception as e:
     print(f"Erro no banco: {e}")
 
@@ -1104,7 +1092,6 @@ def atualizar_entrega(id):
     pedido = cur.fetchone()
     
     if pedido:
-        # Verifica se é Admin (muda tudo) ou Vendedor (muda só os dele)
         if session.get('tipo') == 'admin' or (session.get('tipo') == 'vendedor' and pedido['vendedor_id'] == session.get('usuario_id')):
             cur.execute("UPDATE pedidos SET status_entrega = %s WHERE id = %s", (novo_status, id))
             conn.commit()
@@ -1165,10 +1152,10 @@ def cadastro_cliente():
         session['usuario_id'] = novo_id
         session['nome'] = nome
         session['tipo'] = 'cliente'
-        flash('Conta criada! Pode finalizar seu pedido.', 'success')
+        flash('Conta criada com sucesso!', 'success')
         return redirect(url_for('carrinho'))
     except:
-        flash('E-mail ou CPF já cadastrado.', 'error')
+        flash('Erro no cadastro.', 'error')
     finally:
         cur.close(); conn.close()
     return redirect(url_for('login'))
@@ -1179,27 +1166,22 @@ def pagina_revendedor():
 
 @app.route('/cadastro/revendedor', methods=['POST'])
 def cadastro_revendedor():
-    nome = request.form['nome']
-    cpf = request.form['cpf']
-    email = request.form['email']
-    whatsapp = request.form['whatsapp']
-    senha = generate_password_hash(request.form['senha'])
+    nome, cpf, email, whatsapp, senha = request.form['nome'], request.form['cpf'], request.form['email'], request.form['whatsapp'], generate_password_hash(request.form['senha'])
     conn = get_db_connection()
     cur = conn.cursor()
     try:
         cur.execute('''INSERT INTO usuarios (nome, cpf, email, whatsapp, senha, tipo, aprovado) VALUES (%s, %s, %s, %s, %s, 'vendedor', FALSE);''', (nome, cpf, email, whatsapp, senha))
         conn.commit()
-        flash('Solicitação enviada! Aguarde análise.', 'success')
-    except:
-        flash('E-mail ou CPF já cadastrado.', 'error')
-    finally:
+        flash('Solicitação enviada!', 'success')
+    except: 
+        flash('Erro na solicitação.', 'error')
+    finally: 
         cur.close(); conn.close()
     return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('Sessão encerrada.', 'success')
     return redirect(url_for('index'))
 
 @app.route('/meus-pedidos')
@@ -1207,23 +1189,13 @@ def logout():
 def meus_pedidos():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute('''
-        SELECT id, valor_total, status_pagamento, status_entrega, mp_preference_id, TO_CHAR(data_pedido, 'DD/MM/YYYY HH24:MI') as data_formatada 
-        FROM pedidos WHERE cliente_id = %s ORDER BY id DESC;
-    ''', (session['usuario_id'],))
+    cur.execute('''SELECT id, valor_total, status_pagamento, status_entrega, mp_preference_id, TO_CHAR(data_pedido, 'DD/MM/YYYY HH24:MI') as data_formatada FROM pedidos WHERE cliente_id = %s ORDER BY id DESC;''', (session['usuario_id'],))
     pedidos_raw = cur.fetchall()
-    
     pedidos = []
     for p in pedidos_raw:
-        cur.execute('''
-            SELECT ip.quantidade, COALESCE(pr.nome, 'Produto Excluído') as nome, COALESCE(pr.volume_ml, 0) as volume_ml
-            FROM itens_pedido ip
-            LEFT JOIN produtos pr ON ip.produto_id = pr.id
-            WHERE ip.pedido_id = %s
-        ''', (p['id'],))
+        cur.execute('''SELECT ip.quantidade, COALESCE(pr.nome, 'Produto Excluído') as nome, COALESCE(pr.volume_ml, 0) as volume_ml FROM itens_pedido ip LEFT JOIN produtos pr ON ip.produto_id = pr.id WHERE ip.pedido_id = %s''', (p['id'],))
         p['itens'] = cur.fetchall()
         pedidos.append(p)
-        
     cur.close(); conn.close()
     return render_template('pedidos_cliente.html', pedidos=pedidos)
 
@@ -1231,45 +1203,28 @@ def meus_pedidos():
 @login_required
 def vendedor_painel():
     if session.get('tipo') != 'vendedor': return redirect(url_for('index'))
-    
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    
     cur.execute("SELECT SUM(valor_total) FROM pedidos WHERE vendedor_id = %s AND status_pagamento = 'aprovado'", (session['usuario_id'],))
     total_vendas = cur.fetchone()['sum'] or 0.0
-    
     cur.execute("SELECT SUM(comissao_total) FROM pedidos WHERE vendedor_id = %s AND status_pagamento = 'aprovado' AND status_comissao = 'pendente'", (session['usuario_id'],))
     comissao_pendente = cur.fetchone()['sum'] or 0.0
-    
     cur.execute("SELECT SUM(comissao_total) FROM pedidos WHERE vendedor_id = %s AND status_pagamento = 'aprovado' AND status_comissao = 'paga'", (session['usuario_id'],))
     comissao_paga = cur.fetchone()['sum'] or 0.0
-    
-    cur.execute('''
-        SELECT p.id, p.valor_total, p.comissao_total, p.status_comissao, p.status_entrega, TO_CHAR(p.data_pedido, 'DD/MM/YYYY') as data_formatada, u.nome as cliente_nome
-        FROM pedidos p JOIN usuarios u ON p.cliente_id = u.id
-        WHERE p.vendedor_id = %s AND p.status_pagamento = 'aprovado' ORDER BY p.id DESC;
-    ''', (session['usuario_id'],))
+    cur.execute('''SELECT p.id, p.valor_total, p.comissao_total, p.status_comissao, p.status_entrega, TO_CHAR(p.data_pedido, 'DD/MM/YYYY') as data_formatada, u.nome as cliente_nome FROM pedidos p JOIN usuarios u ON p.cliente_id = u.id WHERE p.vendedor_id = %s AND p.status_pagamento = 'aprovado' ORDER BY p.id DESC;''', (session['usuario_id'],))
     vendas_raw = cur.fetchall()
-    
     vendas = []
     for v in vendas_raw:
-        cur.execute('''
-            SELECT ip.quantidade, COALESCE(pr.nome, 'Produto Excluído') as nome, COALESCE(pr.volume_ml, 0) as volume_ml
-            FROM itens_pedido ip
-            LEFT JOIN produtos pr ON ip.produto_id = pr.id
-            WHERE ip.pedido_id = %s
-        ''', (v['id'],))
+        cur.execute('''SELECT ip.quantidade, COALESCE(pr.nome, 'Produto Excluído') as nome, COALESCE(pr.volume_ml, 0) as volume_ml FROM itens_pedido ip LEFT JOIN produtos pr ON ip.produto_id = pr.id WHERE ip.pedido_id = %s''', (v['id'],))
         v['itens'] = cur.fetchall()
         vendas.append(v)
-        
     cur.close(); conn.close()
-    
     host_url = request.url_root.rstrip('/')
     return render_template('vendedor_painel.html', total_vendas=total_vendas, comissao_pendente=comissao_pendente, comissao_paga=comissao_paga, vendas=vendas, host_url=host_url)
 
 
 # ==========================================
-# 7. MÓDULO GERENCIAL E CONFIGURAÇÕES (ADMIN)
+# 7. MÓDULO GERENCIAL (ADMINISTRADOR)
 # ==========================================
 
 @app.route('/admin/dashboard')
@@ -1277,21 +1232,22 @@ def vendedor_painel():
 def admin_dashboard():
     conn = get_db_connection()
     cur = conn.cursor()
+    
     cur.execute("SELECT SUM(valor_total) FROM pedidos WHERE status_pagamento = 'aprovado';")
     faturamento = cur.fetchone()[0] or 0.0
     
-    # Produtos Vendidos Real
     cur.execute("SELECT SUM(ip.quantidade) FROM itens_pedido ip JOIN pedidos p ON ip.pedido_id = p.id WHERE p.status_pagamento = 'aprovado';")
     produtos_vendidos = cur.fetchone()[0] or 0
     
-    # Comissões Pagas Real
     cur.execute("SELECT SUM(comissao_total) FROM pedidos WHERE status_pagamento = 'aprovado' AND status_comissao = 'paga';")
     comissoes_pagas = cur.fetchone()[0] or 0.0
     
     cur.execute('SELECT COUNT(*) FROM produtos;')
     total_produtos = cur.fetchone()[0]
+    
     cur.execute("SELECT COUNT(*) FROM pedidos WHERE status_pagamento = 'aprovado';")
     total_pedidos = cur.fetchone()[0]
+    
     cur.execute("SELECT COUNT(*) FROM usuarios WHERE tipo='vendedor' AND aprovado=FALSE;")
     pendentes = cur.fetchone()[0]
     
@@ -1308,7 +1264,6 @@ def admin_usuarios():
     cur.close(); conn.close()
     return render_template('admin_usuarios.html', usuarios=usuarios)
 
-# Criação de Usuário (Qualquer Nível) feita pelo Administrador
 @app.route('/admin/usuario/criar', methods=['POST'])
 @admin_required
 def admin_criar_usuario():
@@ -1342,8 +1297,7 @@ def admin_editar_usuario(id):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     if request.method == 'POST':
-        cur.execute('''UPDATE usuarios SET nome=%s, email=%s, whatsapp=%s, cpf=%s, tipo=%s, aprovado=%s WHERE id=%s''', 
-                   (request.form['nome'], request.form['email'], request.form.get('whatsapp'), request.form.get('cpf'), request.form['tipo'], request.form['aprovado'] == '1', id))
+        cur.execute('''UPDATE usuarios SET nome=%s, email=%s, whatsapp=%s, cpf=%s, tipo=%s, aprovado=%s WHERE id=%s''', (request.form['nome'], request.form['email'], request.form.get('whatsapp'), request.form.get('cpf'), request.form['tipo'], request.form['aprovado'] == '1', id))
         conn.commit(); cur.close(); conn.close()
         flash('Usuário atualizado com sucesso.', 'success')
         return redirect(url_for('admin_usuarios'))
@@ -1371,7 +1325,7 @@ def admin_config():
     if request.method == 'POST':
         cur.execute("UPDATE configuracoes SET valor = %s WHERE chave = 'mp_access_token'", (request.form['mp_access_token'].strip(),))
         conn.commit()
-        flash('Token do Mercado Pago salvo com sucesso!', 'success')
+        flash('Token do Mercado Pago atualizado!', 'success')
         return redirect(url_for('admin_config'))
     cur.execute("SELECT valor FROM configuracoes WHERE chave = 'mp_access_token'")
     token = cur.fetchone()
@@ -1384,27 +1338,13 @@ def admin_config():
 def admin_comissoes_gerais():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute('''
-        SELECT p.id, p.valor_total, p.comissao_total, p.status_comissao, p.status_pagamento, p.status_entrega, TO_CHAR(p.data_pedido, 'DD/MM/YYYY') as data_formatada, 
-               u1.nome as cliente_nome, u2.nome as vendedor_nome
-        FROM pedidos p 
-        LEFT JOIN usuarios u1 ON p.cliente_id = u1.id
-        LEFT JOIN usuarios u2 ON p.vendedor_id = u2.id
-        ORDER BY p.id DESC;
-    ''')
+    cur.execute('''SELECT p.id, p.valor_total, p.comissao_total, p.status_comissao, p.status_pagamento, p.status_entrega, TO_CHAR(p.data_pedido, 'DD/MM/YYYY') as data_formatada, u1.nome as cliente_nome, u2.nome as vendedor_nome FROM pedidos p LEFT JOIN usuarios u1 ON p.cliente_id = u1.id LEFT JOIN usuarios u2 ON p.vendedor_id = u2.id ORDER BY p.id DESC;''')
     vendas_raw = cur.fetchall()
-    
     vendas = []
     for v in vendas_raw:
-        cur.execute('''
-            SELECT ip.quantidade, COALESCE(pr.nome, 'Produto Excluído') as nome, COALESCE(pr.volume_ml, 0) as volume_ml
-            FROM itens_pedido ip
-            LEFT JOIN produtos pr ON ip.produto_id = pr.id
-            WHERE ip.pedido_id = %s
-        ''', (v['id'],))
+        cur.execute('''SELECT ip.quantidade, COALESCE(pr.nome, 'Produto Excluído') as nome, COALESCE(pr.volume_ml, 0) as volume_ml FROM itens_pedido ip LEFT JOIN produtos pr ON ip.produto_id = pr.id WHERE ip.pedido_id = %s''', (v['id'],))
         v['itens'] = cur.fetchall()
         vendas.append(v)
-        
     cur.close(); conn.close()
     return render_template('admin_comissao.html', vendas=vendas)
 
@@ -1415,7 +1355,7 @@ def pagar_comissao(id):
     cur = conn.cursor()
     cur.execute("UPDATE pedidos SET status_comissao = 'paga' WHERE id = %s", (id,))
     conn.commit(); cur.close(); conn.close()
-    flash('Comissão marcada como PAGA e repassada ao vendedor.', 'success')
+    flash('Comissão marcada como PAGA.', 'success')
     return redirect(url_for('admin_comissoes_gerais'))
 
 @app.route('/admin/aprovacoes')
@@ -1437,13 +1377,17 @@ def aprovar_revendedor(id):
     conn.commit(); cur.close(); conn.close()
     return redirect(url_for('admin_aprovacoes'))
 
+# --- ESTOQUE E EDIÇÃO (Totalmente Funcionais) ---
+
 @app.route('/admin/estoque', methods=['GET', 'POST'])
 @admin_required
 def admin_estoque():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    
     if request.method == 'POST':
         action = request.form.get('action')
+        
         if action == 'novo_produto':
             n = request.form['nome']
             v = request.form['volume_ml']
@@ -1484,6 +1428,7 @@ def admin_estoque():
         conn.commit()
         cur.close()
         conn.close()
+        flash('Estoque modificado com sucesso!', 'success')
         return redirect(url_for('admin_estoque'))
         
     data_hoje = datetime.today().strftime('%Y-%m-%d')
@@ -1514,23 +1459,24 @@ def admin_editar_produto(id):
         v = request.form['volume_ml']
         p = request.form['preco']
         c = request.form['custo']
+        e = int(request.form['estoque'])
         d = request.form.get('descricao', '')
         img = request.files.get('imagem')
         
         if img and img.filename != '':
             img_b64 = base64.b64encode(img.read()).decode('utf-8')
             cur.execute('''
-                UPDATE produtos SET nome=%s, volume_ml=%s, preco=%s, custo=%s, descricao=%s, imagem_base64=%s WHERE id=%s
-            ''', (n, v, p, c, d, img_b64, id))
+                UPDATE produtos SET nome=%s, volume_ml=%s, preco=%s, custo=%s, estoque=%s, descricao=%s, imagem_base64=%s WHERE id=%s
+            ''', (n, v, p, c, e, d, img_b64, id))
         else:
             cur.execute('''
-                UPDATE produtos SET nome=%s, volume_ml=%s, preco=%s, custo=%s, descricao=%s WHERE id=%s
-            ''', (n, v, p, c, d, id))
+                UPDATE produtos SET nome=%s, volume_ml=%s, preco=%s, custo=%s, estoque=%s, descricao=%s WHERE id=%s
+            ''', (n, v, p, c, e, d, id))
             
         conn.commit()
         cur.close()
         conn.close()
-        flash('Fragrância atualizada com sucesso no sistema!', 'success')
+        flash('Fragrância e estoque atualizados com sucesso!', 'success')
         return redirect(url_for('admin_estoque'))
         
     cur.execute('SELECT * FROM produtos WHERE id = %s', (id,))
