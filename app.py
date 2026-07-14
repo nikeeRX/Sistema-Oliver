@@ -60,9 +60,9 @@ TEMPLATES = {
             .price { font-size: 14pt; color: #2c2621; margin-bottom: 20px; font-family: 'Times New Roman', serif; }
             
             .dashboard-cards { display: flex; gap: 20px; margin-bottom: 40px; flex-wrap: wrap; }
-            .card { background: #ffffff; padding: 30px; border: 1px solid #eae1d3; border-top: 3px solid #b89758; flex: 1; min-width: 200px; border-radius: 6px; text-align: center; }
+            .card { background: #ffffff; padding: 30px; border: 1px solid #eae1d3; border-top: 3px solid #b89758; flex: 1; min-width: 150px; border-radius: 6px; text-align: center; }
             .card h3 { color: #8c764d; font-size: 9pt; margin-bottom: 15px; letter-spacing: 2px; }
-            .card p { font-size: 26pt; color: #2c2621; font-family: 'Times New Roman', serif; }
+            .card p { font-size: 22pt; color: #2c2621; font-family: 'Times New Roman', serif; }
             
             .form-row { display: flex; flex-wrap: wrap; gap: 15px; }
             .col-100 { width: 100%; }
@@ -113,12 +113,12 @@ TEMPLATES = {
                         {% if session.get('tipo') == 'admin' %}
                             <a href="/admin/dashboard">Painel</a>
                             <a href="/admin/estoque">Estoque</a>
-                            <a href="/admin/comissao">Vendas & Pedidos</a>
+                            <a href="/admin/comissao">Vendas & Entregas</a>
                             <a href="/admin/usuarios">Usuários</a>
                             <a href="/admin/configuracoes">⚙️ API</a>
                         {% elif session.get('tipo') == 'vendedor' %}
                             <a href="/carrinho">Carrinho</a>
-                            <a href="/vendedor/painel">Minhas Vendas & Link</a>
+                            <a href="/vendedor/painel">Minhas Vendas & Entregas</a>
                         {% else %}
                             <a href="/carrinho">Carrinho</a>
                             <a href="/meus-pedidos">Meus Pedidos</a>
@@ -269,15 +269,19 @@ TEMPLATES = {
     <div class="dashboard-cards">
         <div class="card">
             <h3>Faturamento Total</h3>
-            <p style="color: #3c763d; font-size: 20pt;">R$ {{ "%.2f"|format(faturamento) }}</p>
+            <p style="color: #3c763d;">R$ {{ "%.2f"|format(faturamento) }}</p>
         </div>
         <div class="card">
-            <h3>Fragrâncias Ativas</h3>
-            <p>{{ total_produtos }}</p>
+            <h3>Qtd Produtos Vendidos</h3>
+            <p>{{ produtos_vendidos }} un</p>
         </div>
         <div class="card">
             <h3>Pedidos Concluídos</h3>
             <p>{{ total_pedidos }}</p>
+        </div>
+        <div class="card">
+            <h3>Comissões Pagas</h3>
+            <p style="color: #b89758;">R$ {{ "%.2f"|format(comissoes_pagas) }}</p>
         </div>
         <div class="card">
             <h3>Aprovações Pendentes</h3>
@@ -291,6 +295,29 @@ TEMPLATES = {
     {% extends 'base.html' %}
     {% block content %}
     <h2 class="page-title">Gestão de Usuários</h2>
+    
+    <!-- Formulário de Criação VIP -->
+    <div style="background: #fdfbf7; padding: 30px; border: 1px solid #eae1d3; border-radius: 6px; margin-bottom: 40px;">
+        <h3 style="margin-bottom: 15px; color: #2c2621; font-family: 'Times New Roman', serif;">Adicionar Novo Usuário (Admin/Vendedor/Cliente)</h3>
+        <form method="POST" action="/admin/usuario/criar" class="form-row">
+            <div class="form-group col-50"><label>Nome Completo</label><input type="text" name="nome" required></div>
+            <div class="form-group col-50"><label>E-mail</label><input type="email" name="email" required></div>
+            <div class="form-group col-50"><label>CPF</label><input type="text" name="cpf"></div>
+            <div class="form-group col-50"><label>WhatsApp</label><input type="text" name="whatsapp"></div>
+            <div class="form-group col-50">
+                <label>Tipo de Conta</label>
+                <select name="tipo" required>
+                    <option value="cliente">Cliente (Padrão)</option>
+                    <option value="vendedor">Revendedor / Afiliado</option>
+                    <option value="admin" style="color: #d9534f; font-weight: bold;">Administrador Total</option>
+                </select>
+            </div>
+            <div class="form-group col-50"><label>Senha de Acesso</label><input type="password" name="senha" required></div>
+            <div class="col-100"><button type="submit" class="btn-primary" style="background-color: #2c2621; color: #b89758;">Criar Conta</button></div>
+        </form>
+    </div>
+
+    <!-- Lista de Usuários -->
     <div class="table-wrapper">
         <table>
             <tr><th>ID</th><th>Nome / Contato</th><th>Tipo</th><th>Status</th><th>Ação</th></tr>
@@ -376,13 +403,13 @@ TEMPLATES = {
     'admin_comissao.html': '''
     {% extends 'base.html' %}
     {% block content %}
-    <h2 class="page-title">Gestão de Vendas & Comissões</h2>
+    <h2 class="page-title">Controle de Vendas & Logística</h2>
     <div class="alert alert-info">
-        Aqui você gerencia todos os pedidos realizados. É por aqui que você sabe o que separar no estoque e qual comissão pagar.
+        Aqui você gerencia todos os pedidos, atualiza o envio para o cliente e repassa as comissões.
     </div>
     <div class="table-wrapper">
         <table>
-            <tr><th>Data / Pedido</th><th>Itens Vendidos</th><th>Vendedor(a)</th><th>Cliente</th><th>Total</th><th>Comissão (10%)</th><th>Status Pago</th></tr>
+            <tr><th>Pedido</th><th>Itens Vendidos</th><th>Cliente</th><th>Vendedor(a) / Total / Comissão</th><th>Status Entrega</th><th>Status Comissão</th></tr>
             {% for v in vendas %}
             <tr>
                 <td style="color: #a39686; font-size: 9pt;">{{ v.data_formatada }}<br><span style="color:#2c2621; font-weight:bold; font-size: 11pt;">#{{ v.id }}</span></td>
@@ -391,13 +418,32 @@ TEMPLATES = {
                         <strong>{{ item.quantidade }}x</strong> {{ item.nome }} ({{ item.volume_ml }}ml)<br>
                     {% endfor %}
                 </td>
-                <td style="color: #2c2621; font-weight: bold;">{{ v.vendedor_nome or 'Venda Direta (S/ Ref)' }}</td>
                 <td style="color: #666;">{{ v.cliente_nome }}</td>
-                <td style="font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(v.valor_total) }}</td>
-                <td style="color: #b89758; font-weight: bold; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(v.comissao_total) }}</td>
+                <td>
+                    <span style="color: #2c2621; font-weight: bold;">{{ v.vendedor_nome or 'Loja (S/ Vendedor)' }}</span><br>
+                    <span style="font-family: 'Times New Roman', serif; font-size: 10pt;">Venda: R$ {{ "%.2f"|format(v.valor_total) }}</span><br>
+                    <span style="color: #b89758; font-weight: bold; font-family: 'Times New Roman', serif; font-size: 10pt;">Comissão: R$ {{ "%.2f"|format(v.comissao_total) }}</span>
+                </td>
+                
+                <!-- Controle de Logística -->
+                <td style="background-color: #fdfbf7;">
+                    {% if v.status_pagamento == 'aprovado' %}
+                        <form action="/pedido/entrega/{{ v.id }}" method="POST" style="margin: 0;">
+                            <select name="status_entrega" onchange="this.form.submit()" style="padding: 6px; font-size: 8.5pt; width: 140px; font-weight: bold;">
+                                <option value="Em separação" {% if v.status_entrega == 'Em separação' %}selected{% endif %}>📦 Em separação</option>
+                                <option value="Enviado" {% if v.status_entrega == 'Enviado' %}selected{% endif %}>🚚 Enviado</option>
+                                <option value="Entregue" {% if v.status_entrega == 'Entregue' %}selected{% endif %}>✅ Entregue</option>
+                            </select>
+                        </form>
+                    {% else %}
+                        <span class="badge badge-gray" style="font-size: 8pt;">Aguardando Pagamento</span>
+                    {% endif %}
+                </td>
+
+                <!-- Controle de Pagamento de Comissão -->
                 <td>
                     {% if v.status_pagamento != 'aprovado' %}
-                        <span class="badge badge-yellow">Aguardando Pagamento</span>
+                        <span class="badge badge-yellow">Aguard. Pagamento</span>
                     {% else %}
                         {% if v.vendedor_nome %}
                             {% if v.status_comissao == 'paga' %}
@@ -414,7 +460,7 @@ TEMPLATES = {
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="7" style="text-align: center; padding: 30px; color: #a39686;">Nenhuma venda registrada ainda.</td></tr>
+            <tr><td colspan="6" style="text-align: center; padding: 30px; color: #a39686;">Nenhuma venda registrada ainda.</td></tr>
             {% endfor %}
         </table>
     </div>
@@ -447,10 +493,10 @@ TEMPLATES = {
         </div>
     </div>
 
-    <h3 style="margin-bottom: 15px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 16pt;">Extrato de Pedidos dos Seus Clientes</h3>
+    <h3 style="margin-bottom: 15px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 16pt;">Extrato de Vendas & Entregas</h3>
     <div class="table-wrapper">
         <table>
-            <tr><th>Data / Pedido</th><th>Itens Comprados</th><th>Cliente</th><th>Valor Vendido</th><th>Sua Comissão</th><th>Status Repasse</th></tr>
+            <tr><th>Pedido</th><th>Itens Comprados</th><th>Cliente</th><th>Valores</th><th>Status Entrega (Cliente)</th><th>Status Comissão</th></tr>
             {% for v in vendas %}
             <tr>
                 <td style="color: #a39686; font-size: 9pt;">{{ v.data_formatada }}<br><span style="color:#2c2621; font-weight:bold; font-size:11pt;">#{{ v.id }}</span></td>
@@ -460,11 +506,25 @@ TEMPLATES = {
                     {% endfor %}
                 </td>
                 <td style="color: #2c2621; font-weight: 500;">{{ v.cliente_nome }}</td>
-                <td style="font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(v.valor_total) }}</td>
-                <td style="color: #b89758; font-weight: bold; font-family: 'Times New Roman', serif;">R$ {{ "%.2f"|format(v.comissao_total) }}</td>
+                <td>
+                    <span style="font-family: 'Times New Roman', serif; font-size: 9pt;">Venda: R$ {{ "%.2f"|format(v.valor_total) }}</span><br>
+                    <span style="color: #b89758; font-weight: bold; font-family: 'Times New Roman', serif; font-size: 10pt;">Comissão: R$ {{ "%.2f"|format(v.comissao_total) }}</span>
+                </td>
+                
+                <!-- Vendedor também pode atualizar a entrega das próprias vendas -->
+                <td style="background-color: #fdfbf7;">
+                    <form action="/pedido/entrega/{{ v.id }}" method="POST" style="margin: 0;">
+                        <select name="status_entrega" onchange="this.form.submit()" style="padding: 6px; font-size: 8.5pt; width: 140px;">
+                            <option value="Em separação" {% if v.status_entrega == 'Em separação' %}selected{% endif %}>📦 Em separação</option>
+                            <option value="Enviado" {% if v.status_entrega == 'Enviado' %}selected{% endif %}>🚚 Enviado</option>
+                            <option value="Entregue" {% if v.status_entrega == 'Entregue' %}selected{% endif %}>✅ Entregue</option>
+                        </select>
+                    </form>
+                </td>
+
                 <td>
                     {% if v.status_comissao == 'paga' %}
-                        <span class="badge badge-green">Paga pela OLIVA</span>
+                        <span class="badge badge-green">Paga pela Loja</span>
                     {% else %}
                         <span class="badge badge-yellow">Aguardando Repasse</span>
                     {% endif %}
@@ -485,7 +545,7 @@ TEMPLATES = {
     {% if pedidos %}
         <div class="table-wrapper">
             <table>
-                <tr><th>Pedido</th><th>Itens Comprados</th><th>Data da Compra</th><th>Valor Total</th><th>Status do Pagamento</th></tr>
+                <tr><th>Pedido</th><th>Itens Comprados</th><th>Data da Compra</th><th>Valor Total</th><th>Status Logística</th><th>Pagamento</th></tr>
                 {% for p in pedidos %}
                 <tr>
                     <td style="color: #2c2621; font-weight: 500; font-size: 11pt;">#{{ p.id }}</td>
@@ -496,18 +556,34 @@ TEMPLATES = {
                     </td>
                     <td style="color: #666;">{{ p.data_formatada }}</td>
                     <td style="font-family: 'Times New Roman', serif; font-size: 12pt;">R$ {{ "%.2f"|format(p.valor_total) }}</td>
+                    
+                    <!-- Exibe a logística para o cliente -->
+                    <td style="background-color: #fdfbf7;">
+                        {% if p.status_pagamento == 'aprovado' %}
+                            {% if p.status_entrega == 'Enviado' %}
+                                <span style="color: #31708f; font-weight: bold;">🚚 Enviado</span>
+                            {% elif p.status_entrega == 'Entregue' %}
+                                <span style="color: #3c763d; font-weight: bold;">✅ Entregue</span>
+                            {% else %}
+                                <span style="color: #8a6d3b; font-weight: bold;">📦 Em separação</span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: #ccc; font-size: 9pt;">Aguardando Pgto</span>
+                        {% endif %}
+                    </td>
+
                     <td>
                         {% if p.status_pagamento == 'aprovado' %}
                             <span class="badge badge-green">Pagamento Aprovado</span>
                         {% elif p.status_pagamento == 'in_process' or p.status_pagamento == 'em_analise' %}
-                            <span class="badge badge-yellow" style="background: #eef8ff; color: #31708f; border-color: #bce8f1;">Em Análise pelo Banco</span>
+                            <span class="badge badge-yellow" style="background: #eef8ff; color: #31708f; border-color: #bce8f1;">Em Análise</span>
                         {% else %}
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <span class="badge badge-yellow">Aguardando Pagamento</span>
+                                <span class="badge badge-yellow">Aguardando Pgto</span>
                                 {% if p.mp_preference_id %}
                                     <a href="https://www.mercadopago.com.br/checkout/v1/redirect?pref_id={{ p.mp_preference_id }}" class="btn-primary" style="padding: 8px 20px; font-size: 8pt; width: auto; text-decoration: none; margin: 0; background-color: #2c2621; color: #b89758;">💳 Pagar Agora</a>
                                 {% else %}
-                                    <span class="badge badge-gray">Link Inválido (Erro)</span>
+                                    <span class="badge badge-gray">Erro</span>
                                 {% endif %}
                             </div>
                         {% endif %}
@@ -531,6 +607,7 @@ TEMPLATES = {
     <h2 class="page-title">Gestão de Estoque</h2>
     <div style="display: flex; flex-direction: column; gap: 30px; margin-bottom: 50px;">
         
+        <!-- 1. CADASTRAR NOVO PRODUTO -->
         <div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;">
             <h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">1. Cadastrar Novo Decant</h3>
             <form method="POST" action="/admin/estoque" enctype="multipart/form-data" class="form-row">
@@ -546,6 +623,7 @@ TEMPLATES = {
             </form>
         </div>
 
+        <!-- 2. REPOSIÇÃO DE ESTOQUE -->
         <div style="background: #fff; padding: 30px 20px; border: 1px solid #f2ecdf; border-radius: 6px;">
             <h3 style="margin-bottom: 20px; color: #2c2621; font-family: 'Times New Roman', serif; font-size: 15pt;">2. Registrar Reposição</h3>
             <form method="POST" action="/admin/estoque" class="form-row">
@@ -737,10 +815,19 @@ def init_db():
             comissao_total NUMERIC(10,2) DEFAULT 0,
             status_pagamento VARCHAR(50) DEFAULT 'pendente',
             status_comissao VARCHAR(50) DEFAULT 'pendente',
+            status_entrega VARCHAR(50) DEFAULT 'Em separação',
             mp_preference_id VARCHAR(100),
             data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     ''')
+    
+    # Bloco Seguro: Cria a coluna status_entrega se ela não existir (Garante que não quebra em bancos antigos)
+    try:
+        cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='pedidos' AND column_name='status_entrega';")
+        if not cur.fetchone():
+            cur.execute("ALTER TABLE pedidos ADD COLUMN status_entrega VARCHAR(50) DEFAULT 'Em separação';")
+    except Exception as e:
+        conn.rollback()
     
     cur.execute('''
         CREATE TABLE IF NOT EXISTS itens_pedido (
@@ -769,7 +856,7 @@ def init_db():
 
 try:
     init_db()
-    print("Banco atualizado!")
+    print("Banco atualizado com Status de Entrega Logístico!")
 except Exception as e:
     print(f"Erro no banco: {e}")
 
@@ -998,8 +1085,40 @@ def webhook():
         cur.close(); conn.close()
     return "OK", 200
 
+
 # ==========================================
-# 5. MÓDULO DE ACESSOS E PAINEL DO VENDEDOR
+# 5. CONTROLE DE LOGÍSTICA (ATUALIZAÇÃO DE ENTREGA)
+# ==========================================
+
+@app.route('/pedido/entrega/<int:id>', methods=['POST'])
+@login_required
+def atualizar_entrega(id):
+    if session.get('tipo') not in ['admin', 'vendedor']:
+        return redirect(url_for('index'))
+        
+    novo_status = request.form.get('status_entrega')
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    cur.execute("SELECT vendedor_id FROM pedidos WHERE id = %s", (id,))
+    pedido = cur.fetchone()
+    
+    if pedido:
+        # Verifica se é Admin (muda tudo) ou Vendedor (muda só os dele)
+        if session.get('tipo') == 'admin' or (session.get('tipo') == 'vendedor' and pedido['vendedor_id'] == session.get('usuario_id')):
+            cur.execute("UPDATE pedidos SET status_entrega = %s WHERE id = %s", (novo_status, id))
+            conn.commit()
+            flash('Status de entrega atualizado para o cliente!', 'success')
+            
+    cur.close(); conn.close()
+    
+    if session.get('tipo') == 'admin':
+        return redirect(url_for('admin_comissoes_gerais'))
+    return redirect(url_for('vendedor_painel'))
+
+
+# ==========================================
+# 6. MÓDULO DE ACESSOS E PAINEL DO VENDEDOR
 # ==========================================
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -1089,7 +1208,7 @@ def meus_pedidos():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute('''
-        SELECT id, valor_total, status_pagamento, mp_preference_id, TO_CHAR(data_pedido, 'DD/MM/YYYY HH24:MI') as data_formatada 
+        SELECT id, valor_total, status_pagamento, status_entrega, mp_preference_id, TO_CHAR(data_pedido, 'DD/MM/YYYY HH24:MI') as data_formatada 
         FROM pedidos WHERE cliente_id = %s ORDER BY id DESC;
     ''', (session['usuario_id'],))
     pedidos_raw = cur.fetchall()
@@ -1126,7 +1245,7 @@ def vendedor_painel():
     comissao_paga = cur.fetchone()['sum'] or 0.0
     
     cur.execute('''
-        SELECT p.id, p.valor_total, p.comissao_total, p.status_comissao, TO_CHAR(p.data_pedido, 'DD/MM/YYYY') as data_formatada, u.nome as cliente_nome
+        SELECT p.id, p.valor_total, p.comissao_total, p.status_comissao, p.status_entrega, TO_CHAR(p.data_pedido, 'DD/MM/YYYY') as data_formatada, u.nome as cliente_nome
         FROM pedidos p JOIN usuarios u ON p.cliente_id = u.id
         WHERE p.vendedor_id = %s AND p.status_pagamento = 'aprovado' ORDER BY p.id DESC;
     ''', (session['usuario_id'],))
@@ -1150,7 +1269,7 @@ def vendedor_painel():
 
 
 # ==========================================
-# 6. MÓDULO GERENCIAL E CONFIGURAÇÕES (ADMIN)
+# 7. MÓDULO GERENCIAL E CONFIGURAÇÕES (ADMIN)
 # ==========================================
 
 @app.route('/admin/dashboard')
@@ -1160,14 +1279,24 @@ def admin_dashboard():
     cur = conn.cursor()
     cur.execute("SELECT SUM(valor_total) FROM pedidos WHERE status_pagamento = 'aprovado';")
     faturamento = cur.fetchone()[0] or 0.0
+    
+    # Produtos Vendidos Real
+    cur.execute("SELECT SUM(ip.quantidade) FROM itens_pedido ip JOIN pedidos p ON ip.pedido_id = p.id WHERE p.status_pagamento = 'aprovado';")
+    produtos_vendidos = cur.fetchone()[0] or 0
+    
+    # Comissões Pagas Real
+    cur.execute("SELECT SUM(comissao_total) FROM pedidos WHERE status_pagamento = 'aprovado' AND status_comissao = 'paga';")
+    comissoes_pagas = cur.fetchone()[0] or 0.0
+    
     cur.execute('SELECT COUNT(*) FROM produtos;')
     total_produtos = cur.fetchone()[0]
     cur.execute("SELECT COUNT(*) FROM pedidos WHERE status_pagamento = 'aprovado';")
     total_pedidos = cur.fetchone()[0]
     cur.execute("SELECT COUNT(*) FROM usuarios WHERE tipo='vendedor' AND aprovado=FALSE;")
     pendentes = cur.fetchone()[0]
+    
     cur.close(); conn.close()
-    return render_template('admin.html', faturamento=faturamento, total_produtos=total_produtos, total_pedidos=total_pedidos, pendentes=pendentes)
+    return render_template('admin.html', faturamento=faturamento, produtos_vendidos=produtos_vendidos, comissoes_pagas=comissoes_pagas, total_produtos=total_produtos, total_pedidos=total_pedidos, pendentes=pendentes)
 
 @app.route('/admin/usuarios')
 @admin_required
@@ -1178,6 +1307,34 @@ def admin_usuarios():
     usuarios = cur.fetchall()
     cur.close(); conn.close()
     return render_template('admin_usuarios.html', usuarios=usuarios)
+
+# Criação de Usuário (Qualquer Nível) feita pelo Administrador
+@app.route('/admin/usuario/criar', methods=['POST'])
+@admin_required
+def admin_criar_usuario():
+    nome = request.form['nome']
+    email = request.form['email']
+    whatsapp = request.form.get('whatsapp')
+    cpf = request.form.get('cpf')
+    tipo = request.form['tipo']
+    senha = generate_password_hash(request.form['senha'])
+    is_admin = True if tipo == 'admin' else False
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute('''
+            INSERT INTO usuarios (nome, email, whatsapp, cpf, senha, tipo, is_admin, aprovado) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, TRUE);
+        ''', (nome, email, whatsapp, cpf, senha, tipo, is_admin))
+        conn.commit()
+        flash(f'Conta {tipo} criada com sucesso para {nome}!', 'success')
+    except Exception as e:
+        flash('Erro: O E-mail ou CPF já está cadastrado em outra conta.', 'error')
+    finally:
+        cur.close(); conn.close()
+        
+    return redirect(url_for('admin_usuarios'))
 
 @app.route('/admin/usuario/editar/<int:id>', methods=['GET', 'POST'])
 @admin_required
@@ -1228,7 +1385,7 @@ def admin_comissoes_gerais():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute('''
-        SELECT p.id, p.valor_total, p.comissao_total, p.status_comissao, p.status_pagamento, TO_CHAR(p.data_pedido, 'DD/MM/YYYY') as data_formatada, 
+        SELECT p.id, p.valor_total, p.comissao_total, p.status_comissao, p.status_pagamento, p.status_entrega, TO_CHAR(p.data_pedido, 'DD/MM/YYYY') as data_formatada, 
                u1.nome as cliente_nome, u2.nome as vendedor_nome
         FROM pedidos p 
         LEFT JOIN usuarios u1 ON p.cliente_id = u1.id
@@ -1280,17 +1437,13 @@ def aprovar_revendedor(id):
     conn.commit(); cur.close(); conn.close()
     return redirect(url_for('admin_aprovacoes'))
 
-# --- ROTAS DE ESTOQUE - DESCOMPRIMIDAS E CORRIGIDAS (QUANTIDADE) ---
-
 @app.route('/admin/estoque', methods=['GET', 'POST'])
 @admin_required
 def admin_estoque():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    
     if request.method == 'POST':
         action = request.form.get('action')
-        
         if action == 'novo_produto':
             n = request.form['nome']
             v = request.form['volume_ml']
@@ -1311,7 +1464,6 @@ def admin_estoque():
             novo_id = cur.fetchone()['id']
             
             if e > 0:
-                # ERRO CORRIGIDO: Era "quantity", agora é "quantidade" conforme o banco
                 cur.execute('''
                     INSERT INTO entradas_estoque (produto_id, quantidade, custo_unitario, data_compra) 
                     VALUES (%s, %s, %s, CURRENT_DATE);
@@ -1319,7 +1471,6 @@ def admin_estoque():
                 
         elif action == 'nova_entrada':
             pid = request.form['produto_id']
-            # ERRO CORRIGIDO: Era request.form['quantity'], agora é 'quantidade'
             qtd = int(request.form['quantidade'])
             c = request.form['custo']
             d = request.form['data_compra']
@@ -1339,7 +1490,6 @@ def admin_estoque():
     cur.execute('SELECT * FROM produtos ORDER BY id DESC;')
     p = cur.fetchall()
     
-    # ERRO CORRIGIDO: e.quantity substituído por e.quantidade
     cur.execute('''
         SELECT e.quantidade, e.custo_unitario, TO_CHAR(e.data_compra, 'DD/MM/YYYY') as data_formatada, p.nome 
         FROM entradas_estoque e 
